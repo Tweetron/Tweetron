@@ -357,7 +357,7 @@ def make_displayset_window():
 
         displayset_layout = [ [sg.Image(filename = 'data/img/ex_img_01.png', pad = ((0,0),(30,0)))],
                                 [sg.Radio(text = 'ツイートとユーザーネームを一行に表示する(従来の方式)', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[0], enable_events = True, k = '-rb_01-')],
-                                [sg.Text(text = 'OBS-Twitter-Streamで使用されていた方式です\nツイートとスクリーンネーム(@から始まるユーザーネーム)を一行に合わせて表示します', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
+                                [sg.Text(text = 'OBS-Twitter-Streamで使用されていた方式です\nツイートとユーザーネームを一行に合わせて表示します', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
                                 [sg.Text(text = '_____________________________________________________________________________________', pad = ((0,0),(15,0)), font = ['Meiryo',10], text_color = '#bdbdbd')],
                                 [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0)))],
                                 [sg.Radio(text = 'ツイートとユーザーネームを分ける', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[1], enable_events = True, k = '-rb_02-')],
