@@ -18,7 +18,7 @@ Windowsのみ対応 (Windows10動作確認済)
 
 (現在ベータテスト版を配布しています)
 
-[ver0.0.1(Beta)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.0.1(Beta))
+[Download ver0.0.1(Beta)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.0.1(Beta))
 
 ## 使用方法
 
