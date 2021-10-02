@@ -17,3 +17,6 @@ Windowsのみ対応 (Windows10動作確認済)
 使用方法については以下のwikiを御覧ください
 
 [https://github.com/CubeZeero/Tweetron/wiki](https://github.com/CubeZeero/Tweetron/wiki)
+
+### License
+[MIT License](https://opensource.org/licenses/MIT)
