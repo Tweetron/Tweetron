@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'datafont';
-  src: local('IBM Plex Sans JP SmBld');
+  src: local('Meiryo UI');
 }
 
 #twitter-text-message{
 
   font-family: 'datafont', sans-serif;
-  font-size: 30px;
+  font-size: 25px;
   color: #000000;
   letter-spacing: 0;
 
@@ -20,7 +20,7 @@
 #twitter-text-username{
 
   font-family: 'datafont', sans-serif;
-  font-size: 20px;
+  font-size: 15px;
   color: #000000;
   letter-spacing: 0;
 
