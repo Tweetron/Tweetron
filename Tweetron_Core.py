@@ -1,0 +1,360 @@
+'''
+
+Tweetron_Core.py
+
+-
+MIT License
+
+Copyright (c) 2021 Cube
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-
+
+'''
+
+# coding: utf-8
+
+import tweepy
+import webbrowser
+import configparser
+import random
+from websocket_server import WebsocketServer
+import time
+import datetime
+import os
+from termcolor import colored, cprint
+import colorama
+import re
+import sys
+
+import api_key
+
+consumer_key = api_key.CONSUMER_KEY()
+consumer_secret = api_key.CONSUMER_SECRET()
+callback_url = 'oob'
+
+colorama.init()
+
+version = '0.0.1 (Beta)'
+
+os.system('title Tweetron v' + version)
+
+figlet_text = r'''
+ _______                _
+|__   __|              | |
+   | |_      _____  ___| |_ _ __ ___  _ __
+   | \ \ /\ / / _ \/ _ \ __| '__/ _ \| '_ \
+   | |\ V  V /  __/  __/ |_| | | (_) | | | |
+   |_| \_/\_/ \___|\___|\__|_|  \___/|_| |_|
+
+'''
+
+print(colored(figlet_text, 'cyan'))
+
+print(colored('Hello! Welcome to Tweetron!', 'cyan'), colored('Version: ' + version, 'green'))
+#print(colored('TweetronはOBSなどの配信ソフトでツイートを画面上に表示する事ができるツールです', 'cyan'))
+print(colored('https://github.com/CubeZeero/Tweetron', 'cyan'))
+print(colored('(C)Cube', 'cyan'))
+print('\n')
+
+def print_info(text):
+    print(colored('[INFO] ', 'green'), text)
+
+def print_warning(text):
+    print(colored('[WARNING] ', 'yellow'), text)
+
+def print_error(text):
+    print(colored('[ERROR] ', 'red'), text)
+
+try:
+    preset_name = sys.argv[1]
+except:
+    print_error('TweetronCore.exe を直接起動せずに Tweetron.exe の[実行]から起動してください')
+    time.sleep(10)
+
+    sys.exit()
+
+if os.path.isdir('data/preset/' + preset_name) == False:
+    print_error('プリセット [' + preset_name + '] は存在しません 10秒後にシャットダウンします')
+    time.sleep(10)
+
+    sys.exit()
+
+read_main_config = configparser.RawConfigParser()
+
+read_main_config.read('data/preset/' + preset_name  + '/config.ini')
+
+since_rb = int(read_main_config.get('main_setting', 'since_rb'))
+imageurl_exclusion = int(read_main_config.get('main_setting', 'imageurl_exclusion'))
+reply_exclusion = int(read_main_config.get('main_setting', 'reply_exclusion'))
+specity_date = str(read_main_config.get('main_setting', 'specity_date'))
+specity_h = int(read_main_config.get('main_setting', 'specity_h'))
+specity_m = int(read_main_config.get('main_setting', 'specity_m'))
+specity_s = int(read_main_config.get('main_setting', 'specity_s'))
+search_command = str(read_main_config.get('filter_setting', 'search_command'))
+streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+
+if search_command == 'null':
+    search_command = ''
+
+with open('data/preset/' + preset_name + '/search_word.txt') as file:
+    for i in range(sum(1 for line in open('data/preset/' + preset_name + '/search_word.txt'))):
+        if i == 0:
+            search_word = file.readline()
+        else:
+            search_word = search_word + ' OR ' + file.readline()
+
+with open('data/preset/' + preset_name + '/nogood_word.txt') as file:
+    for i in range(sum(1 for line in open('data/preset/' + preset_name + '/nogood_word.txt'))):
+        if i == 0:
+            nogood_word = '-' + file.readline()
+        else:
+            nogood_word = search_word + ' -' + file.readline()
+
+if reply_exclusion == 1:
+    reply_exclusion_text = 'exclude:replies'
+else:
+    reply_exclusion_text = ''
+
+datetime_now = datetime.datetime.now()
+
+if since_rb == 1:
+    since_date = datetime_now.strftime('%Y-%m-%d_%H:%M:%S_JST')
+else:
+    since_date = specity_date + '_' + str(specity_h).zfill(2) + ':' + str(specity_m).zfill(2) + ':' + str(specity_s).zfill(2) + '_JST'
+
+search_text_raw = search_word  + ' ' + nogood_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
+
+tweet_send_cnt = 0
+random_list = []
+tweet_list_text = []
+random_list = []
+relast_id = '0'
+relast_id_tmp = ''
+checkid = ''
+checkid_loop = 0
+checkid_sw = 0
+
+searchword_loop_cnt = 0
+searchword_loop_cnt_tmp = 0
+
+main_config = configparser.ConfigParser()
+main_config.read('data/ini/config.ini', encoding='utf-8')
+
+access_token = main_config.get('TwitterAPI', 'access_token')
+access_token_secret = main_config.get('TwitterAPI', 'access_token_secret')
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
+
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth, wait_on_rate_limit=True)
+
+print_info('再起動をした場合は再度[ Tweetron.html ]を読み込んでください')
+print_info('使用プリセット: ' + preset_name)
+print_info('検索ワード: ' + search_text_raw)
+
+def search_word_api(si):
+
+    tweet_list = []
+    tweet_text_raw = ''
+
+    global searchword_loop_cnt
+    global relast_id
+    global checkid_sw
+    global streamtext_displaytype
+    global status_list
+    global since_date
+    global since_rb
+
+    searchword_loop_cnt = 0
+
+    if si == '0':
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(10,50), include_entities = False)
+    else:
+        #前回取得したツイートより最新のツイートを取得する
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, since_id = si)
+
+    for result in tweets:
+        if searchword_loop_cnt == 0:
+            relast_id = result.id_str
+
+        tweet_text_raw = result.text
+
+        if imageurl_exclusion == 1:
+            tweet_text = re.sub(r' https://t.co/\w{10}', '', tweet_text_raw)
+
+        if streamtext_displaytype == 1:
+            tweet_list.append(tweet_text +' (@'+ result.user.name +')')
+        else:
+            tweet_list.append(result.user.name + ' (@' + result.user.screen_name + ')\n' + tweet_text)
+
+        searchword_loop_cnt += 1
+
+    return tweet_list
+
+def checkid_relast():
+
+    relast_id_return = ''
+
+    tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = 1, include_entities = False)
+
+    for result in tweets:
+        relast_id_return = result.id_str
+
+    return relast_id_return
+
+#JSと接続
+def new_client(client, server):
+
+    global tweet_send_cnt
+    global random_list
+    global tweet_list_text
+    global random_list
+    global checkid
+    global relast_id
+    global relast_id_tmp
+    global checkid_loop
+
+    print_info('接続されました')
+
+    tweet_send_cnt = 0
+    tweet_list_text = []
+    random_list = []
+
+    tweet_list_text = search_word_api('0')
+    relast_id_tmp = relast_id
+    checkid = relast_id
+
+    if searchword_loop_cnt != 0:
+        while True:
+            random_int = random.randint(0,searchword_loop_cnt -1)
+            if random_int not in random_list:
+                server.send_message(client, tweet_list_text[random_int])
+                checkid_loop += 1
+                break
+    else:
+        print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
+
+    #server.send_message(client, '接続完了')
+
+#JSから切断
+def client_left(client, server):
+    print_info('切断されました')
+
+#JSからのメッセージ受信
+def message_received(client, server, message):
+
+    global tweet_send_cnt
+    global random_list
+    global tweet_list_text
+    global random_list
+    global searchword_loop_cnt
+    global relast_id
+    global checkid
+    global checkid_loop
+    global checkid_sw
+    global relast_id_tmp
+
+    #JSからRTの送信が来た場合ツイートを送る
+    if message == 'JS':
+
+        #searchword_loop_cnt = 0 は取得できるツイートが存在しない
+        if searchword_loop_cnt != 0:
+
+            #すべてのツイートストックを送信し終えた
+            if tweet_send_cnt == searchword_loop_cnt:
+                time.sleep(0.5)
+
+                tweet_send_cnt = 0
+                tweet_list_text = []
+                random_list = []
+
+                #idを指定してツイートを取得
+                tweet_list_text = search_word_api(relast_id)
+
+                #前回取得したツイートより最新のツイートが存在する場合
+                if relast_id_tmp != relast_id:
+                    relast_id_tmp = relast_id
+
+                    checkid = relast_id
+                    checkid_loop = 0
+
+                    while True:
+                        random_int = random.randint(0,searchword_loop_cnt -1)
+                        if random_int not in random_list:
+                            server.send_message(client, tweet_list_text[random_int])
+                            checkid_loop += 1
+                            break
+
+                    random_list.append(random_int)
+                    tweet_send_cnt += 1
+
+                #前回取得したツイートより最新のツイートが存在しない場合
+                else:
+
+                    tweet_send_cnt = 0
+                    tweet_list_text = []
+                    random_list = []
+                    checkid_loop = 0
+
+                    #idを指定せずにツイートを取得
+                    tweet_list_text = search_word_api('0')
+
+                    while True:
+                        random_int = random.randint(0,searchword_loop_cnt -1)
+                        if random_int not in random_list:
+                            server.send_message(client, tweet_list_text[random_int])
+                            checkid_loop += 1
+                            break
+
+                    random_list.append(random_int)
+                    tweet_send_cnt += 1
+
+            #まだ未送信のツイートがある
+            else:
+
+                #5回目のループで最新のツイートがあるかidを取得
+                if checkid_loop >= 5:
+                    checkid = checkid_relast()
+                    checkid_loop = 0
+
+                #取得したidを検証/最新のものであれば強制再取得
+                if checkid != relast_id:
+                    searchword_loop_cnt = tweet_send_cnt + 1
+
+                while True:
+                    random_int = random.randint(0,searchword_loop_cnt -1)
+                    if random_int not in random_list:
+                        server.send_message(client, tweet_list_text[random_int])
+                        checkid_loop += 1
+                        break
+
+                random_list.append(random_int)
+                tweet_send_cnt += 1
+
+        else:
+
+            print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
+
+server = WebsocketServer(port=10356)
+
+server.set_fn_new_client(new_client)
+server.set_fn_client_left(client_left)
+server.set_fn_message_received(message_received)
+
+server.run_forever()

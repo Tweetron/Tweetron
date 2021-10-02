@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'datafont';
+  src: local('IBM Plex Sans JP SmBld');
+}
+
+#twitter-text-message{
+
+  font-family: 'datafont', sans-serif;
+  font-size: 29px;
+  color: #000000;
+  letter-spacing: 0;
+  overflow: hidden;
+
+}
