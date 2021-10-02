@@ -319,7 +319,7 @@ def make_filterset_window():
         filterset_layout = [ [sg.Text(text = '検索コマンド', pad = ((0,0),(20,0))), sg.Input(default_text = search_command, size = (50,1), pad = ((15,0),(20,0)), tooltip = 'コマンドを入力してください', k = '-filter_input-')],
                             [sg.Text(text = '公式が用意したコマンドを使用してツイート検索にフィルタを設定できます\n(※sinceコマンドは使用できません)\nコマンド一覧の引用元(https://yonoi.com/twitter-search-command/)', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080'), sg.Button(button_text = 'コマンド一覧', font = ['Meiryo',8], size = (13,1), pad = ((17,0),(20,0)), key = '-command_list-')],
                             [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((100,15),(20,0)), key = 'Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel')] ]
-        return sg.Window('検索コマンド設定', filterset_layout, icon = base64_png_icon, size = (500,165), font = ['Meiryo',10])
+        return sg.Window('検索コマンド設定', filterset_layout, icon = base64_png_icon, size = (500,185), font = ['Meiryo',10])
 
 def make_textset_window():
 
