@@ -116,16 +116,21 @@ if search_command == 'null':
 with open('data/preset/' + preset_name + '/search_word.txt') as file:
     for i in range(sum(1 for line in open('data/preset/' + preset_name + '/search_word.txt'))):
         if i == 0:
-            search_word = file.readline()
+            search_word = file.readline().rstrip(os.linesep)
         else:
-            search_word = search_word + ' OR ' + file.readline()
+            search_word = search_word + ' OR ' + file.readline().rstrip(os.linesep)
 
 with open('data/preset/' + preset_name + '/nogood_word.txt') as file:
-    for i in range(sum(1 for line in open('data/preset/' + preset_name + '/nogood_word.txt'))):
-        if i == 0:
-            nogood_word = '-' + file.readline()
-        else:
-            nogood_word = search_word + ' -' + file.readline()
+
+    nogood_word = ''
+    nogood_word_raw = file.readlines()
+
+    if nogood_word_raw != '':
+
+        for txt in nogood_word_raw:
+            nogood_word = nogood_word + ' -' + txt.rstrip(os.linesep)
+    else:
+        nogood_word = ' '
 
 if reply_exclusion == 1:
     reply_exclusion_text = 'exclude:replies'
@@ -139,7 +144,7 @@ if since_rb == 1:
 else:
     since_date = specity_date + '_' + str(specity_h).zfill(2) + ':' + str(specity_m).zfill(2) + ':' + str(specity_s).zfill(2) + '_JST'
 
-search_text_raw = search_word  + ' ' + nogood_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
+search_text_raw = search_word + nogood_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
 
 tweet_send_cnt = 0
 random_list = []
