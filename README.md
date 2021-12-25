@@ -26,6 +26,16 @@ Windowsのみ対応 (Windows10動作確認済)
 
 [https://github.com/CubeZeero/Tweetron/wiki](https://github.com/CubeZeero/Tweetron/wiki)
 
+## 開発者向け
+
+以下のサードパーティライブラリを使用しています
+
+```
+pip install pysimplegui tweepy pygame termcolor colorama websocket-server pyinstaller pyarmor
+```
+
+MacOSはサポートしていません
+
 ## License
 
 [MIT License](https://github.com/CubeZeero/Tweetron/blob/main/LICENSE)
