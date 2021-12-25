@@ -36,6 +36,8 @@ pip install pysimplegui tweepy pygame termcolor colorama websocket-server pyinst
 
 MacOSはサポートしていません
 
+[Change Log](https://github.com/CubeZeero/Tweetron/wiki/7.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
+
 ## License
 
 [MIT License](https://github.com/CubeZeero/Tweetron/blob/main/LICENSE)
