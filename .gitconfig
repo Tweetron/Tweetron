@@ -1,0 +1,3 @@
+[merge "ours"]
+    name = "Keep ours merge"
+    driver = true
