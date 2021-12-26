@@ -422,7 +422,7 @@ if twitter_oauth_sw == 0:
                     with open('data/ini/config.ini', 'w') as cw:
                         main_config.write(cw)
 
-                    value = sg.popup_ok('認証が完了しました')
+                    value = sg.popup_ok('認証が完了しました', title = window_title, icon = png_icon_path)
                     twitter_oauth_sw = 1
 
                     main_window.close()
