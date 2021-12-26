@@ -44,13 +44,15 @@ from tkinter import font
 import tkinter
 import sys
 import subprocess
-from playsound import playsound
 from pygame import mixer
 import shutil
+import json
 
-from library import htmlsave
+from tweetron_library import htmlcss_save
 
 import api_key
+import software_info
+software_version = software_info.VERSION()
 
 #フォントリスト取得
 root = tkinter.Tk()
@@ -58,7 +60,7 @@ fonts_list = list(font.families())
 fonts_list.sort()
 root.destroy()
 
-base64_png_icon = 'data/img/icon.ico'
+png_icon_path = 'data/img/icon.ico'
 
 #コンフィグ読み込み
 main_config = configparser.ConfigParser()
@@ -67,8 +69,9 @@ main_config.read('data/ini/config.ini', encoding='utf-8')
 #OAuth認証済みかどうか
 twitter_oauth_sw = int(main_config.get('MainConfig', 'oauth2_sw'))
 
-software_version = '0.0.1 (Beta)'
 font_name = 'Meiryo UI'
+
+window_title = 'Tweetron ' + software_version
 
 #APIキー取得
 consumer_key = api_key.CONSUMER_KEY()
@@ -84,6 +87,8 @@ time_h_list = []
 time_m_list = []
 time_s_list = []
 fontsize_list = []
+streamtext_scrollspeed_list = []
+
 for num in range(25):
     time_h_list.append(num)
 for num in range(61):
@@ -91,6 +96,8 @@ for num in range(61):
     time_s_list.append(num)
 for num in range(61):
     fontsize_list.append(num)
+for num in range(101):
+    streamtext_scrollspeed_list.append(num)
 
 dt_now = datetime.datetime.now()
 
@@ -140,6 +147,7 @@ streamtext_font_name = 'Meiryo UI'
 streamtext_font_path = ''
 
 streamtext_displaytype = 1
+streamtext_scrollspeed = 80
 
 search_command = ''
 
@@ -167,6 +175,7 @@ def update_setting_window(preset_name_combo):
         global streamtext_font_name
         global streamtext_font_path
         global streamtext_displaytype
+        global streamtext_scrollspeed
 
         if preset_name_combo == '(新規名称未設定)':
 
@@ -187,6 +196,7 @@ def update_setting_window(preset_name_combo):
             streamtext_font_path = ''
 
             streamtext_displaytype = 1
+            streamtext_scrollspeed = 80
 
             search_command = ''
 
@@ -227,6 +237,7 @@ def update_setting_window(preset_name_combo):
             streamtext_font_name = str(read_main_config.get('text_setting', 'streamtext_font_name'))
             streamtext_font_path = str(read_main_config.get('text_setting', 'streamtext_font_path'))
             streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+            streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
 
             with open('data/preset/' + preset_name_combo  + '/search_word.txt') as file:
                 search_word = file.read()
@@ -264,13 +275,13 @@ def make_welcome_window():
                             [sg.Text(text = 'Tweetronへようこそ', pad = ((0,0),(0,0)))],
                             [sg.Text(text = 'Twitterアカウントの認証を行ってください', pad = ((0,0),(50,0)))],
                             [sg.Button(button_text = '認証', font = ['Meiryo',10], size = (20,1), pad = ((0,0),(20,0)), key = 'Auth_Button')] ]
-        return sg.Window('Tweetron ' + software_version, main_layout, icon = base64_png_icon, size = (700,500), font = ['Meiryo',12], element_justification='c')
+        return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,500), font = ['Meiryo',12], element_justification='c')
 
 def make_twitteroauth_window():
         twitter_oauth_layout = [ [sg.Text(text = '表示されたPINを入力してください', pad = ((0,0),(30,0)))],
                             [sg.Input(size = (10,1), pad = ((0,10),(15,0)), tooltip = 'ブラウザに表示された7桁のPINコードを入力してください', key = 'pin_code')],
                             [sg.Button(button_text = 'OK', font = ['Meiryo',10], size = (10,1), pad = ((0,15),(20,0)), key = 'AuthPIN_Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',10], size = (10,1), pad = ((15,0),(20,0)), key = 'AuthPIN_Button_Cancel')] ]
-        return sg.Window('Tweetron ' + software_version, twitter_oauth_layout, icon = base64_png_icon, size = (500,200), font = ['Meiryo',12], element_justification='c')
+        return sg.Window(window_title, twitter_oauth_layout, icon = png_icon_path, size = (500,200), font = ['Meiryo',12], element_justification='c')
 
 def make_setting_window():
 
@@ -307,7 +318,7 @@ def make_setting_window():
                          sg.Spin(values = time_s_list, initial_value = specity_s, font = ['Meiryo',10], pad = ((10,0),(20,0)), readonly = True, disabled = True, k = '-spin_s-'), sg.Text(text = '秒', pad = ((10,0),(20,0)), font = ['Meiryo',10])],
                          [sg.Button(button_text = 'テキスト詳細設定', font = ['Meiryo',8], size = (20,1), pad = ((0,0),(20,0)), k = '-text_set-'), sg.Button(button_text = 'テキスト表示形式設定', font = ['Meiryo',8], size = (20,1), pad = ((30,0),(20,0)), k = '-display_set-'),
                          sg.Button(button_text = 'プリセット保存', font = ['Meiryo',8], size = (20,1), pad = ((30,0),(20,0))), sg.Button(button_text = '実行', font = ['Meiryo',8], size = (20,1), pad = ((30,0),(20,0)))] ]
-        return sg.Window('Tweetron ' + software_version, main_layout, icon = base64_png_icon, size = (700,465), font = ['Meiryo',12], finalize = True)
+        return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,465), font = ['Meiryo',12], finalize = True)
 
 def make_filterset_window():
 
@@ -319,7 +330,7 @@ def make_filterset_window():
         filterset_layout = [ [sg.Text(text = '検索コマンド', pad = ((0,0),(20,0))), sg.Input(default_text = search_command, size = (50,1), pad = ((15,0),(20,0)), tooltip = 'コマンドを入力してください', k = '-filter_input-')],
                             [sg.Text(text = '公式が用意したコマンドを使用してツイート検索にフィルタを設定できます\n(※sinceコマンドは使用できません)\nコマンド一覧の引用元(https://yonoi.com/twitter-search-command/)', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080'), sg.Button(button_text = 'コマンド一覧', font = ['Meiryo',8], size = (13,1), pad = ((17,0),(20,0)), key = '-command_list-')],
                             [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((100,15),(20,0)), key = 'Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel')] ]
-        return sg.Window('検索コマンド設定', filterset_layout, icon = base64_png_icon, size = (500,185), font = ['Meiryo',10])
+        return sg.Window('検索コマンド設定', filterset_layout, icon = png_icon_path, size = (500,185), font = ['Meiryo',10])
 
 def make_textset_window():
 
@@ -343,7 +354,7 @@ def make_textset_window():
                             [sg.Listbox(fonts_list, size = (60,10), default_values = font_name, enable_events = True, highlight_background_color = '#4169e1', pad = ((0,0),(0,0)), key = '-font_list-')],
                             [sg.Input(default_text = streamtext_font_path, size = (53,1), pad = ((0,0),(10,5)), tooltip = 'ttfフォントを指定できます', enable_events = True, k = '-font_path-'), sg.FileBrowse(button_text = '参照', target = "-font_path-", file_types=((".ttf file", "*.ttf"),), size = (5,1), pad = ((10,0),(10,5)))],
                             [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((10,15),(20,0)), key = 'Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel'), sg.Button(button_text = '実際に確認する', font = ['Meiryo',8], size = (15,1), pad = ((60,0),(20,0)), key = '-Verification-')] ]
-        return sg.Window('テキスト詳細設定', textset_layout, icon = base64_png_icon, size = (500,750), font = ['Meiryo',10], finalize = True)
+        return sg.Window('テキスト詳細設定', textset_layout, icon = png_icon_path, size = (500,750), font = ['Meiryo',10], finalize = True)
 
 def make_displayset_window():
 
@@ -362,8 +373,10 @@ def make_displayset_window():
                                 [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0)))],
                                 [sg.Radio(text = 'ツイートとユーザーネームを分ける', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[1], enable_events = True, k = '-rb_02-')],
                                 [sg.Text(text = 'ツイートとユーザーネームを上下に分けて表示します\nスクリーンネームだけでなくユーザーネームも表示できます\n(上下の間隔は設定できませんのでクロップ機能を使って分けて頂く必要があります)', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
+                                [sg.Text(text = 'テキストのスクロールスピード', pad = ((118,0),(30,0)), font = ['Meiryo',10]),
+                                sg.Spin(values = streamtext_scrollspeed_list, initial_value = streamtext_scrollspeed, pad = ((0,0),(30,0)), enable_events = True, readonly = True, k = '-scrollspeed_spin-'), sg.Text(text = '%', pad = ((0,0),(30,0)), font = ['Meiryo',10])],
                                 [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((90,15),(35,0)), key = 'Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(35,0)), key = 'Button_Cancel')] ]
-        return sg.Window('テキスト表示形式設定', displayset_layout, icon = base64_png_icon, size = (500,500), font = ['Meiryo',10], finalize=True)
+        return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (500,550), font = ['Meiryo',10], finalize=True)
 
 if twitter_oauth_sw == 0:
 
@@ -409,7 +422,7 @@ if twitter_oauth_sw == 0:
                     with open('data/ini/config.ini', 'w') as cw:
                         main_config.write(cw)
 
-                    value = sg.popup_ok('認証が完了しました')
+                    value = sg.popup_ok('認証が完了しました', title = window_title, icon = png_icon_path)
                     twitter_oauth_sw = 1
 
                     main_window.close()
@@ -481,7 +494,7 @@ while True:
             if main_values['-search_word-'].replace('\n','') == '':
                 error_message += '検索ワードを設定してください'
 
-            sg.popup_ok(error_message)
+            sg.popup_ok(error_message, title = window_title, icon = png_icon_path)
 
         else:
 
@@ -526,6 +539,7 @@ while True:
 
             write_main_config.add_section('textdisplay_setting')
             write_main_config.set('textdisplay_setting', 'streamtext_displaytype', streamtext_displaytype)
+            write_main_config.set('textdisplay_setting', 'streamtext_scrollspeed', streamtext_scrollspeed)
 
             with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
                 write_main_config.write(file)
@@ -538,7 +552,7 @@ while True:
 
             play_sound('data/sound/complete.mp3',1)
 
-            sg.popup_ok('プリセットを保存しました')
+            sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path)
 
             #プリセットリストを再度読み込み
             dir_files = os.listdir('data/preset')
@@ -550,7 +564,7 @@ while True:
     #プリセット削除
     if main_event == '-preset_del-':
 
-        return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = 'プリセット削除')
+        return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path)
 
         if return_value == 'Yes':
 
@@ -647,22 +661,22 @@ while True:
 
                     #フォントファイルが存在する場合そのフォントを優先して適用
                     if textset_values['-font_path-'] != '' and os.path.exists(textset_values['-font_path-']) == True and textset_values['-font_path-'][-3:] == 'ttf':
-                        htmlsave.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
+                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
                     else:
-                        htmlsave.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
+                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
 
                     #設定されているサンプルテキストを適用したhtmlファイルを作成
-                    htmlsave.save_test_html(textset_values['-sample_text_input-'])
+                    htmlcss_save.save_test_html(textset_values['-sample_text_input-'])
                     time.sleep(0.5)
                     subprocess.Popen(['start', 'data/html/verification/verification.html'], shell = True)
 
                 else:
-                    value = sg.popup_ok('カラーコードを指定してください')
+                    value = sg.popup_ok('カラーコードを指定してください', title = window_title, icon = png_icon_path)
 
             if textset_event == 'Button_OK':
 
                 if os.path.exists(textset_values['-font_path-']) == False and textset_values['-font_path-'] != '':
-                    sg.popup_ok('指定したttfファイルが存在しません')
+                    sg.popup_ok('指定したttfファイルが存在しません', title = window_title, icon = png_icon_path)
                 else:
                     streamtext_font_size = int(textset_values['-fontsize_spin-'])
                     streamtext_color = textset_values['-color_input-']
@@ -689,6 +703,8 @@ while True:
                     streamtext_displaytype = 1
                 else:
                     streamtext_displaytype = 2
+
+                streamtext_scrollspeed = displayset_values['-scrollspeed_spin-']
 
                 break
 
@@ -725,9 +741,9 @@ while True:
 
             #実際に使用するcssを作成
             if streamtext_font_path != '' and streamtext_font_path != 'null':
-                htmlsave.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
+                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
             else:
-                htmlsave.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
+                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
 
             #テキスト表示設定をもとに2つのタイプから選択
             if streamtext_displaytype == 1:

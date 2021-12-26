@@ -1,3 +1,5 @@
+# coding: utf-8
+
 def save_css(font_name, color_code, font_size, font_path = 'null'):
 
     if font_path == 'null':

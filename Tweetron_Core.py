@@ -30,6 +30,7 @@ SOFTWARE.
 
 # coding: utf-8
 
+#ライブラリインポート
 import tweepy
 import webbrowser
 import configparser
@@ -43,15 +44,39 @@ import colorama
 import re
 import sys
 
+#APIキー読み込み
 import api_key
 
+import software_info
+version = software_info.VERSION()
+
+#APIキー割り当て
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
 
+tweet_send_cnt = 0
+random_list = []
+tweet_list_text = []
+random_list = []
+relast_id = '0'
+relast_id_tmp = ''
+checkid = ''
+checkid_loop = 0
+checkid_sw = 0
+nogood_word_list = ''
+
 colorama.init()
 
-version = '0.0.1 (Beta)'
+#それぞれのステータスに色割り当て
+def print_info(text):
+    print(colored('[INFO] ', 'green'), text)
+
+def print_warning(text):
+    print(colored('[WARNING] ', 'yellow'), text)
+
+def print_error(text):
+    print(colored('[ERROR] ', 'red'), text)
 
 os.system('title Tweetron v' + version)
 
@@ -73,15 +98,6 @@ print(colored('https://github.com/CubeZeero/Tweetron', 'cyan'))
 print(colored('(C)Cube', 'cyan'))
 print('\n')
 
-def print_info(text):
-    print(colored('[INFO] ', 'green'), text)
-
-def print_warning(text):
-    print(colored('[WARNING] ', 'yellow'), text)
-
-def print_error(text):
-    print(colored('[ERROR] ', 'red'), text)
-
 try:
     preset_name = sys.argv[1]
 except:
@@ -96,6 +112,7 @@ if os.path.isdir('data/preset/' + preset_name) == False:
 
     sys.exit()
 
+#プリセット設定読み込み
 read_main_config = configparser.RawConfigParser()
 
 read_main_config.read('data/preset/' + preset_name  + '/config.ini')
@@ -109,10 +126,12 @@ specity_m = int(read_main_config.get('main_setting', 'specity_m'))
 specity_s = int(read_main_config.get('main_setting', 'specity_s'))
 search_command = str(read_main_config.get('filter_setting', 'search_command'))
 streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
 
 if search_command == 'null':
     search_command = ''
 
+#検索ワード読み込み
 with open('data/preset/' + preset_name + '/search_word.txt') as file:
     for i in range(sum(1 for line in open('data/preset/' + preset_name + '/search_word.txt'))):
         if i == 0:
@@ -120,23 +139,20 @@ with open('data/preset/' + preset_name + '/search_word.txt') as file:
         else:
             search_word = search_word + ' OR ' + file.readline().rstrip(os.linesep)
 
+#NGワード読み込み
 with open('data/preset/' + preset_name + '/nogood_word.txt') as file:
+    nogood_word = file.readlines()
 
-    nogood_word = ''
-    nogood_word_raw = file.readlines()
+for ngword in nogood_word:
+    nogood_word_list = nogood_word_list + ngword + ', '
 
-    if nogood_word_raw != '':
-
-        for txt in nogood_word_raw:
-            nogood_word = nogood_word + ' -' + txt.rstrip(os.linesep)
-    else:
-        nogood_word = ' '
-
+#リプライ除外
 if reply_exclusion == 1:
     reply_exclusion_text = 'exclude:replies'
 else:
     reply_exclusion_text = ''
 
+#現在時刻取取得
 datetime_now = datetime.datetime.now()
 
 if since_rb == 1:
@@ -144,17 +160,7 @@ if since_rb == 1:
 else:
     since_date = specity_date + '_' + str(specity_h).zfill(2) + ':' + str(specity_m).zfill(2) + ':' + str(specity_s).zfill(2) + '_JST'
 
-search_text_raw = search_word + nogood_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
-
-tweet_send_cnt = 0
-random_list = []
-tweet_list_text = []
-random_list = []
-relast_id = '0'
-relast_id_tmp = ''
-checkid = ''
-checkid_loop = 0
-checkid_sw = 0
+search_text_raw = search_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
 
 searchword_loop_cnt = 0
 searchword_loop_cnt_tmp = 0
@@ -162,6 +168,7 @@ searchword_loop_cnt_tmp = 0
 main_config = configparser.ConfigParser()
 main_config.read('data/ini/config.ini', encoding='utf-8')
 
+#TwitterAPI認証
 access_token = main_config.get('TwitterAPI', 'access_token')
 access_token_secret = main_config.get('TwitterAPI', 'access_token_secret')
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
@@ -172,6 +179,11 @@ api = tweepy.API(auth, wait_on_rate_limit=True)
 print_info('再起動をした場合は再度[ Tweetron.html ]を読み込んでください')
 print_info('使用プリセット: ' + preset_name)
 print_info('検索ワード: ' + search_text_raw)
+
+if nogood_word_list == '':
+    print_info('NGワードは設定されていません')
+else:
+    print_info('NGワードリスト: ' + nogood_word_list)
 
 def search_word_api(si):
 
@@ -188,30 +200,38 @@ def search_word_api(si):
 
     searchword_loop_cnt = 0
 
+    #ワード検索
     if si == '0':
-        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(10,50), include_entities = False)
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(10,50), include_entities = False, tweet_mode='extended')
     else:
         #前回取得したツイートより最新のツイートを取得する
-        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, since_id = si)
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, tweet_mode='extended', since_id = si)
 
     for result in tweets:
-        if searchword_loop_cnt == 0:
-            relast_id = result.id_str
+        tweet_text_raw = result.full_text
 
-        tweet_text_raw = result.text
+        if nogood_word != '' and tweet_text_raw not in nogood_word:
 
-        if imageurl_exclusion == 1:
-            tweet_text = re.sub(r' https://t.co/\w{10}', '', tweet_text_raw)
+            if searchword_loop_cnt == 0:
+                relast_id = result.id_str
 
-        if streamtext_displaytype == 1:
-            tweet_list.append(tweet_text +' (@'+ result.user.name +')')
-        else:
-            tweet_list.append(result.user.name + ' (@' + result.user.screen_name + ')\n' + tweet_text)
+            #画像URLを削除
+            if imageurl_exclusion == 1:
+                tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
+            else:
+                tweet_text = tweet_text_raw
 
-        searchword_loop_cnt += 1
+            #それぞれの表示形態に合わせて整形
+            if streamtext_displaytype == 1:
+                tweet_list.append(tweet_text +' (@'+ result.user.name +')')
+            else:
+                tweet_list.append(result.user.name + ' (@' + result.user.screen_name + ')\n' + tweet_text.replace('\n',''))
+
+            searchword_loop_cnt += 1
 
     return tweet_list
 
+#ツイートID取得
 def checkid_relast():
 
     relast_id_return = ''
@@ -237,6 +257,9 @@ def new_client(client, server):
 
     print_info('接続されました')
 
+    server.send_message(client, str(streamtext_scrollspeed))
+    time.sleep(1)
+
     tweet_send_cnt = 0
     tweet_list_text = []
     random_list = []
@@ -254,8 +277,6 @@ def new_client(client, server):
                 break
     else:
         print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
-
-    #server.send_message(client, '接続完了')
 
 #JSから切断
 def client_left(client, server):
