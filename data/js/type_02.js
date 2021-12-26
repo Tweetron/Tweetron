@@ -4,16 +4,16 @@ $(function(){
   let css_fontsize = window.getComputedStyle(css_selector, null).getPropertyValue('font-size');
   let css_ls = window.getComputedStyle(css_selector, null).getPropertyValue('letter-spacing');
 
-  var scrollspeed = 0
-  var loopcnt = 0
+  var scrollspeed = 0;
+  var loopcnt = 0;
 
   var ws = new WebSocket("ws://127.0.0.1:10356/");
 
   ws.onmessage = function(message){
 
     if (loopcnt == 0){
-      scrollspeed = 11.0 - parseFloat(message.data, 10)/10
-      console.log(scrollspeed)
+      scrollspeed = 11.0 - parseFloat(message.data, 10)/10;
+      console.log(scrollspeed);
 
     }else{
 
