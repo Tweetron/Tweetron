@@ -47,6 +47,9 @@ import sys
 #APIキー読み込み
 import api_key
 
+import software_info
+version = software_info.VERSION()
+
 #APIキー割り当て
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
@@ -74,8 +77,6 @@ def print_warning(text):
 
 def print_error(text):
     print(colored('[ERROR] ', 'red'), text)
-
-version = '0.0.2 (Beta)'
 
 os.system('title Tweetron v' + version)
 
@@ -125,6 +126,7 @@ specity_m = int(read_main_config.get('main_setting', 'specity_m'))
 specity_s = int(read_main_config.get('main_setting', 'specity_s'))
 search_command = str(read_main_config.get('filter_setting', 'search_command'))
 streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
 
 if search_command == 'null':
     search_command = ''
@@ -200,13 +202,13 @@ def search_word_api(si):
 
     #ワード検索
     if si == '0':
-        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(10,50), include_entities = False)
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(10,50), include_entities = False, tweet_mode='extended')
     else:
         #前回取得したツイートより最新のツイートを取得する
-        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, since_id = si)
+        tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, tweet_mode='extended', since_id = si)
 
     for result in tweets:
-        tweet_text_raw = result.text
+        tweet_text_raw = result.full_text
 
         if nogood_word != '' and tweet_text_raw not in nogood_word:
 
@@ -215,7 +217,7 @@ def search_word_api(si):
 
             #画像URLを削除
             if imageurl_exclusion == 1:
-                tweet_text = re.sub(r' https://t.co/\w{10}', '', tweet_text_raw)
+                tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
             else:
                 tweet_text = tweet_text_raw
 
@@ -254,6 +256,9 @@ def new_client(client, server):
     global checkid_loop
 
     print_info('接続されました')
+
+    server.send_message(client, str(streamtext_scrollspeed))
+    time.sleep(1)
 
     tweet_send_cnt = 0
     tweet_list_text = []

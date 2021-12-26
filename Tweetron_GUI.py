@@ -46,10 +46,13 @@ import sys
 import subprocess
 from pygame import mixer
 import shutil
+import json
 
-from library import htmlsave
+from tweetron_library import htmlcss_save
 
 import api_key
+import software_info
+software_version = software_info.VERSION()
 
 #フォントリスト取得
 root = tkinter.Tk()
@@ -66,7 +69,6 @@ main_config.read('data/ini/config.ini', encoding='utf-8')
 #OAuth認証済みかどうか
 twitter_oauth_sw = int(main_config.get('MainConfig', 'oauth2_sw'))
 
-software_version = '0.0.2 (Beta)'
 font_name = 'Meiryo UI'
 
 window_title = 'Tweetron ' + software_version
@@ -85,6 +87,8 @@ time_h_list = []
 time_m_list = []
 time_s_list = []
 fontsize_list = []
+streamtext_scrollspeed_list = []
+
 for num in range(25):
     time_h_list.append(num)
 for num in range(61):
@@ -92,6 +96,8 @@ for num in range(61):
     time_s_list.append(num)
 for num in range(61):
     fontsize_list.append(num)
+for num in range(101):
+    streamtext_scrollspeed_list.append(num)
 
 dt_now = datetime.datetime.now()
 
@@ -141,6 +147,7 @@ streamtext_font_name = 'Meiryo UI'
 streamtext_font_path = ''
 
 streamtext_displaytype = 1
+streamtext_scrollspeed = 80
 
 search_command = ''
 
@@ -168,6 +175,7 @@ def update_setting_window(preset_name_combo):
         global streamtext_font_name
         global streamtext_font_path
         global streamtext_displaytype
+        global streamtext_scrollspeed
 
         if preset_name_combo == '(新規名称未設定)':
 
@@ -188,6 +196,7 @@ def update_setting_window(preset_name_combo):
             streamtext_font_path = ''
 
             streamtext_displaytype = 1
+            streamtext_scrollspeed = 80
 
             search_command = ''
 
@@ -228,6 +237,7 @@ def update_setting_window(preset_name_combo):
             streamtext_font_name = str(read_main_config.get('text_setting', 'streamtext_font_name'))
             streamtext_font_path = str(read_main_config.get('text_setting', 'streamtext_font_path'))
             streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+            streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
 
             with open('data/preset/' + preset_name_combo  + '/search_word.txt') as file:
                 search_word = file.read()
@@ -363,8 +373,10 @@ def make_displayset_window():
                                 [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0)))],
                                 [sg.Radio(text = 'ツイートとユーザーネームを分ける', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[1], enable_events = True, k = '-rb_02-')],
                                 [sg.Text(text = 'ツイートとユーザーネームを上下に分けて表示します\nスクリーンネームだけでなくユーザーネームも表示できます\n(上下の間隔は設定できませんのでクロップ機能を使って分けて頂く必要があります)', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
+                                [sg.Text(text = 'テキストのスクロールスピード', pad = ((118,0),(30,0)), font = ['Meiryo',10]),
+                                sg.Spin(values = streamtext_scrollspeed_list, initial_value = streamtext_scrollspeed, pad = ((0,0),(30,0)), enable_events = True, readonly = True, k = '-scrollspeed_spin-'), sg.Text(text = '%', pad = ((0,0),(30,0)), font = ['Meiryo',10])],
                                 [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((90,15),(35,0)), key = 'Button_OK'), sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(35,0)), key = 'Button_Cancel')] ]
-        return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (500,500), font = ['Meiryo',10], finalize=True)
+        return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (500,550), font = ['Meiryo',10], finalize=True)
 
 if twitter_oauth_sw == 0:
 
@@ -527,6 +539,7 @@ while True:
 
             write_main_config.add_section('textdisplay_setting')
             write_main_config.set('textdisplay_setting', 'streamtext_displaytype', streamtext_displaytype)
+            write_main_config.set('textdisplay_setting', 'streamtext_scrollspeed', streamtext_scrollspeed)
 
             with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
                 write_main_config.write(file)
@@ -648,12 +661,12 @@ while True:
 
                     #フォントファイルが存在する場合そのフォントを優先して適用
                     if textset_values['-font_path-'] != '' and os.path.exists(textset_values['-font_path-']) == True and textset_values['-font_path-'][-3:] == 'ttf':
-                        htmlsave.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
+                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
                     else:
-                        htmlsave.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
+                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
 
                     #設定されているサンプルテキストを適用したhtmlファイルを作成
-                    htmlsave.save_test_html(textset_values['-sample_text_input-'])
+                    htmlcss_save.save_test_html(textset_values['-sample_text_input-'])
                     time.sleep(0.5)
                     subprocess.Popen(['start', 'data/html/verification/verification.html'], shell = True)
 
@@ -691,6 +704,8 @@ while True:
                 else:
                     streamtext_displaytype = 2
 
+                streamtext_scrollspeed = displayset_values['-scrollspeed_spin-']
+
                 break
 
         displayset_window.close()
@@ -726,9 +741,9 @@ while True:
 
             #実際に使用するcssを作成
             if streamtext_font_path != '' and streamtext_font_path != 'null':
-                htmlsave.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
+                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
             else:
-                htmlsave.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
+                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
 
             #テキスト表示設定をもとに2つのタイプから選択
             if streamtext_displaytype == 1:
