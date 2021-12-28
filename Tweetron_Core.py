@@ -56,6 +56,8 @@ consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
 
 tweet_send_cnt = 0
+searchword_loop_cnt = 0
+searchword_loop_cnt_tmp = 0
 random_list = []
 tweet_list_text = []
 random_list = []
@@ -118,7 +120,6 @@ read_main_config = configparser.RawConfigParser()
 read_main_config.read('data/preset/' + preset_name  + '/config.ini')
 
 since_rb = int(read_main_config.get('main_setting', 'since_rb'))
-imageurl_exclusion = int(read_main_config.get('main_setting', 'imageurl_exclusion'))
 reply_exclusion = int(read_main_config.get('main_setting', 'reply_exclusion'))
 specity_date = str(read_main_config.get('main_setting', 'specity_date'))
 specity_h = int(read_main_config.get('main_setting', 'specity_h'))
@@ -161,9 +162,6 @@ else:
     since_date = specity_date + '_' + str(specity_h).zfill(2) + ':' + str(specity_m).zfill(2) + ':' + str(specity_s).zfill(2) + '_JST'
 
 search_text_raw = search_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
-
-searchword_loop_cnt = 0
-searchword_loop_cnt_tmp = 0
 
 main_config = configparser.ConfigParser()
 main_config.read('data/ini/config.ini', encoding='utf-8')
@@ -216,10 +214,7 @@ def search_word_api(si):
                 relast_id = result.id_str
 
             #画像URLを削除
-            if imageurl_exclusion == 1:
-                tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
-            else:
-                tweet_text = tweet_text_raw
+            tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
 
             #それぞれの表示形態に合わせて整形
             if streamtext_displaytype == 1:
