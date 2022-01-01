@@ -31,7 +31,7 @@ Windowsのみ対応 (Windows10動作確認済)
 以下のサードパーティライブラリを使用しています
 
 ```
-pip install pysimplegui tweepy pygame termcolor colorama websocket-server pyinstaller pyarmor
+pip install pysimplegui tweepy termcolor colorama websocket-server pyinstaller pyarmor
 ```
 
 MacOSはサポートしていません
