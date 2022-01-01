@@ -75,7 +75,7 @@ def save_test_css(font_name, color_code, font_size, font_path = 'null'):
 
     css_data = css_font_data + css_body_data
 
-    with open('data/html/verification/css/style.css', mode='w', encoding='utf-8') as file:
+    with open('data/verification/css/style_html.css', mode='w', encoding='utf-8') as file:
         file.write(css_data)
 
 def save_test_html(text):
@@ -86,7 +86,7 @@ def save_test_html(text):
                 '  <head>\n'
                 '      <meta charset="utf-8"/>\n'
                 '      <title>obs-twitter-stream</title>\n'
-                '      <link rel="stylesheet" href="css/style.css">\n'
+                '      <link rel="stylesheet" href="css/style_html.css">\n'
                 '  </head>\n'
                 '\n'
                 '  <body>\n'
@@ -95,5 +95,21 @@ def save_test_html(text):
                 '\n'
                 '</html>')
 
-    with open('data/html/verification/verification.html', mode='w', encoding='utf-8') as file:
+    with open('data/verification/verification.html', mode='w', encoding='utf-8') as file:
         file.write(html_data)
+
+def save_js_data(scroll_speed, display_delay, fadein_speed, fadeout_speed, start_delay, type):
+
+    js_data = ('var scroll_speed = ' + scroll_speed + ';\n'
+               'var display_delay = ' + display_delay + ';\n'
+               'var fadein_speed = ' + fadein_speed + ';\n'
+               'var fadeout_speed = ' + fadeout_speed + ';\n'
+               'var start_delay = ' + start_delay + ';')
+
+    if type == 0:
+        with open('data/verification/js/verification_data.js', mode='w', encoding='utf-8') as file:
+            file.write(js_data)
+
+    elif type == 1:
+        with open('data/js/data.js', mode='w', encoding='utf-8') as file:
+            file.write(js_data)

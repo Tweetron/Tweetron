@@ -30,6 +30,16 @@ SOFTWARE.
 
 # coding: utf-8
 
+figlet_text = r'''
+ _______                _
+|__   __|              | |
+   | |_      _____  ___| |_ _ __ ___  _ __
+   | \ \ /\ / / _ \/ _ \ __| '__/ _ \| '_ \
+   | |\ V  V /  __/  __/ |_| | | (_) | | | |
+   |_| \_/\_/ \___|\___|\__|_|  \___/|_| |_|
+
+'''
+
 #ライブラリインポート
 import tweepy
 import webbrowser
@@ -58,14 +68,18 @@ callback_url = 'oob'
 tweet_send_cnt = 0
 searchword_loop_cnt = 0
 searchword_loop_cnt_tmp = 0
+
 random_list = []
 tweet_list_text = []
 random_list = []
+
 relast_id = '0'
 relast_id_tmp = ''
+
 checkid = ''
 checkid_loop = 0
 checkid_sw = 0
+
 nogood_word_list = ''
 
 colorama.init()
@@ -82,20 +96,8 @@ def print_error(text):
 
 os.system('title Tweetron v' + version)
 
-figlet_text = r'''
- _______                _
-|__   __|              | |
-   | |_      _____  ___| |_ _ __ ___  _ __
-   | \ \ /\ / / _ \/ _ \ __| '__/ _ \| '_ \
-   | |\ V  V /  __/  __/ |_| | | (_) | | | |
-   |_| \_/\_/ \___|\___|\__|_|  \___/|_| |_|
-
-'''
-
 print(colored(figlet_text, 'cyan'))
-
 print(colored('Hello! Welcome to Tweetron!', 'cyan'), colored('Version: ' + version, 'green'))
-#print(colored('TweetronはOBSなどの配信ソフトでツイートを画面上に表示する事ができるツールです', 'cyan'))
 print(colored('https://github.com/CubeZeero/Tweetron', 'cyan'))
 print(colored('(C)Cube', 'cyan'))
 print('\n')
@@ -127,7 +129,6 @@ specity_m = int(read_main_config.get('main_setting', 'specity_m'))
 specity_s = int(read_main_config.get('main_setting', 'specity_s'))
 search_command = str(read_main_config.get('filter_setting', 'search_command'))
 streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
-streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
 
 if search_command == 'null':
     search_command = ''
@@ -251,9 +252,6 @@ def new_client(client, server):
     global checkid_loop
 
     print_info('接続されました')
-
-    server.send_message(client, str(streamtext_scrollspeed))
-    time.sleep(1)
 
     tweet_send_cnt = 0
     tweet_list_text = []

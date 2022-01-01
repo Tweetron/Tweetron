@@ -48,7 +48,7 @@ from pygame import mixer
 import shutil
 import json
 
-from tweetron_library import htmlcss_save
+from tweetron_library import webscript_save
 
 import api_key
 import software_info
@@ -76,6 +76,17 @@ for num in range(61):
     fontsize_list.append(num)
 for num in range(101):
     streamtext_scrollspeed_list.append(num)
+
+def isint(s):
+    try:
+        int(s)
+    except ValueError:
+        return False
+    else:
+        return True
+
+def dialogwindow(text):
+    sg.popup_ok(text, title = window_title, icon = png_icon_path)
 
 dt_now = datetime.datetime.now()
 
@@ -148,11 +159,38 @@ streamtext_font_path = ''
 
 streamtext_displaytype = 1
 streamtext_scrollspeed = 80
+streamtext_displaydelay = 5
+streamtext_fadeinspeed = 3
+streamtext_fadeoutspeed = 3
+streamtext_startdelay = 3
+
+template_list = ['未実装']
 
 search_command = ''
 
 #設定ウィンドウ [ make_setting_window() ] のアップデート
 def update_setting_window(preset_name_combo):
+
+    global preset_name
+    global search_word
+    global nogood_word
+    global since_rb
+    global reply_exclusion
+    global specity_date
+    global specity_h
+    global specity_m
+    global specity_s
+
+    global streamtext_font_size
+    global streamtext_color
+    global streamtext_font_name
+    global streamtext_font_path
+
+    global streamtext_scrollspeed
+    global streamtext_displaydelay
+    global streamtext_fadeinspeed
+    global streamtext_fadeoutspeed
+    global streamtext_startdelay
 
     dt_now = datetime.datetime.now()
 
@@ -175,6 +213,10 @@ def update_setting_window(preset_name_combo):
 
         streamtext_displaytype = 1
         streamtext_scrollspeed = 80
+        streamtext_displaydelay = 5
+        streamtext_fadeinspeed = 3
+        streamtext_fadeoutspeed = 3
+        streamtext_startdelay = 3
 
         search_command = ''
 
@@ -214,6 +256,10 @@ def update_setting_window(preset_name_combo):
         streamtext_font_path = str(read_main_config.get('text_setting', 'streamtext_font_path'))
         streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
         streamtext_scrollspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_scrollspeed'))
+        streamtext_displaydelay = int(read_main_config.get('textdisplay_setting', 'streamtext_displaydelay'))
+        streamtext_fadeinspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_fadeinspeed'))
+        streamtext_fadeoutspeed = int(read_main_config.get('textdisplay_setting', 'streamtext_fadeoutspeed'))
+        streamtext_startdelay = int(read_main_config.get('textdisplay_setting', 'streamtext_startdelay'))
 
         with open('data/preset/' + preset_name_combo  + '/search_word.txt') as file:
             search_word = file.read()
@@ -288,10 +334,10 @@ if twitter_oauth_sw == 0:
 
                     except Exception as error_result:
                         if '401' in str(error_result):
-                            sg.popup_ok('有効なPINコードではありません\nもう一度お試しください', title = window_title, icon = png_icon_path)
+                            dialogwindow('有効なPINコードではありません\nもう一度お試しください')
                         else:
-                            sg.popup_ok('エラーが発生しました\nもう一度お試しください', title = window_title, icon = png_icon_path)
-                        
+                            dialogwindow('エラーが発生しました\nもう一度お試しください')
+
                         main_window.Element('-Auth_Button-').Update(disabled = False)
                         break
 
@@ -311,7 +357,7 @@ if twitter_oauth_sw == 0:
                     with open('data/ini/config.ini', 'w') as cw:
                         main_config.write(cw)
 
-                    value = sg.popup_ok('認証が完了しました', title = window_title, icon = png_icon_path)
+                    dialogwindow('認証が完了しました')
                     twitter_oauth_sw = 1
 
                     main_window.close()
@@ -327,12 +373,13 @@ if twitter_oauth_sw == 0:
         main_window.close()
 
 if twitter_oauth_sw == 1:
-    main_window = window_layout.make_setting_window(sg, window_title, png_icon_path,
-                                                    preset_name, search_word, nogood_word,
-                                                    since_rb, reply_exclusion,
-                                                    specity_h, specity_m, specity_s,
-                                                    specity_date, preset_list, dt_now,
-                                                    time_h_list, time_m_list, time_s_list)
+    main_window = window_layout.make_setting_window(\
+    sg, window_title, png_icon_path,
+    preset_name, search_word, nogood_word,
+    since_rb, reply_exclusion,
+    specity_h, specity_m, specity_s,
+    specity_date, preset_list, dt_now,
+    time_h_list, time_m_list, time_s_list)
 
 while True:
     main_event, main_values = main_window.read()
@@ -376,7 +423,7 @@ while True:
             if main_values['-search_word-'].replace('\n','') == '':
                 error_message += '検索ワードを設定してください'
 
-            sg.popup_ok(error_message, title = window_title, icon = png_icon_path)
+            dialogwindow(error_message)
 
         else:
 
@@ -421,6 +468,10 @@ while True:
             write_main_config.add_section('textdisplay_setting')
             write_main_config.set('textdisplay_setting', 'streamtext_displaytype', streamtext_displaytype)
             write_main_config.set('textdisplay_setting', 'streamtext_scrollspeed', streamtext_scrollspeed)
+            write_main_config.set('textdisplay_setting', 'streamtext_displaydelay', streamtext_displaydelay)
+            write_main_config.set('textdisplay_setting', 'streamtext_fadeinspeed', streamtext_fadeinspeed)
+            write_main_config.set('textdisplay_setting', 'streamtext_fadeoutspeed', streamtext_fadeoutspeed)
+            write_main_config.set('textdisplay_setting', 'streamtext_startdelay', streamtext_startdelay)
 
             with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
                 write_main_config.write(file)
@@ -431,7 +482,7 @@ while True:
             with open('data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
                 file.write(nogood_word)
 
-            sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path)
+            dialogwindow('プリセットを保存しました')
 
             #プリセットリストを再度読み込み
             dir_files = os.listdir('data/preset')
@@ -510,10 +561,11 @@ while True:
     #テキスト表示設定
     if main_event == '-text_set-':
 
-        textset_window = window_layout.make_textset_window(sg, window_title, png_icon_path,
-                                                           streamtext_font_size, streamtext_color, streamtext_font_name,
-                                                           streamtext_font_path, fonts_list, font_name,
-                                                           fontsize_list)
+        textset_window = window_layout.make_textset_window(\
+        sg, window_title, png_icon_path,
+        streamtext_font_size, streamtext_color, streamtext_font_name,
+        streamtext_font_path, fonts_list, font_name,
+        fontsize_list)
 
         #textset_window['-sample_text-'].expand(expand_x = True, expand_y = True, expand_row = True)
 
@@ -569,22 +621,24 @@ while True:
 
                     #フォントファイルが存在する場合そのフォントを優先して適用
                     if textset_values['-font_path-'] != '' and os.path.exists(textset_values['-font_path-']) == True and textset_values['-font_path-'][-3:] == 'ttf':
-                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
+                        webscript_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
                     else:
-                        htmlcss_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
+                        webscript_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
 
                     #設定されているサンプルテキストを適用したhtmlファイルを作成
-                    htmlcss_save.save_test_html(textset_values['-sample_text_input-'])
+                    webscript_save.save_test_html(textset_values['-sample_text_input-'])
+
                     time.sleep(0.5)
-                    subprocess.Popen(['start', 'data/html/verification/verification.html'], shell = True)
+                    subprocess.Popen(['start', 'data/verification/verification_html.html'], shell = True)
 
                 else:
-                    value = sg.popup_ok('カラーコードを指定してください', title = window_title, icon = png_icon_path)
+
+                    dialogwindow('カラーコードを指定してください')
 
             if textset_event == 'Button_OK':
 
                 if os.path.exists(textset_values['-font_path-']) == False and textset_values['-font_path-'] != '':
-                    sg.popup_ok('指定したttfファイルが存在しません', title = window_title, icon = png_icon_path)
+                    dialogwindow('指定したttfファイルが存在しません')
                 else:
                     streamtext_font_size = int(textset_values['-fontsize_spin-'])
                     streamtext_color = textset_values['-color_input-']
@@ -598,10 +652,12 @@ while True:
     #テキスト表示設定
     if main_event == '-display_set-':
 
-        displayset_window = window_layout.make_displayset_window(sg, window_title, png_icon_path,
-                                                                 streamtext_displaytype,
-                                                                 streamtext_scrollspeed_list,
-                                                                 streamtext_scrollspeed)
+        displayset_window = window_layout.make_displayset_window(\
+        sg, window_title, png_icon_path,
+        streamtext_displaytype, streamtext_scrollspeed_list,
+        streamtext_scrollspeed, streamtext_displaydelay,
+        streamtext_fadeinspeed, streamtext_fadeoutspeed,
+        streamtext_startdelay, template_list)
 
         while True:
             displayset_event, displayset_values = displayset_window.read()
@@ -609,52 +665,83 @@ while True:
             if displayset_event == sg.WIN_CLOSED or displayset_event == 'Button_Cancel':
                 break
 
+            if displayset_event == '-verification-':
+                webscript_save.save_js_data(\
+                str(displayset_values['-scrollspeed_spin-']), str(displayset_values['-displaydelay_input-']),
+                str(displayset_values['-fadeinspeed_input-']), str(displayset_values['-fadeoutspeed_input-']),
+                str(displayset_values['-startdelay_input-']), 0)
+
+                time.sleep(0.5)
+                subprocess.Popen(['start', 'data/verification/verification_js.html'], shell = True)
+
+            if displayset_event == '-setting_init-':
+                return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path)
+
+                if return_value == 'Yes':
+                    displayset_window['-rb_01-'].update(value = True)
+                    displayset_window['-scrollspeed_spin-'].update(value = 80)
+                    displayset_window['-displaydelay_input-'].update(value = '5')
+                    displayset_window['-startdelay_input-'].update(value = '3')
+                    displayset_window['-fadeinspeed_input-'].update(value = '3')
+                    displayset_window['-fadeoutspeed_input-'].update(value = '3')
+
             if displayset_event == 'Button_OK':
                 if displayset_values['-rb_01-'] == True:
                     streamtext_displaytype = 1
                 else:
                     streamtext_displaytype = 2
 
-                streamtext_scrollspeed = displayset_values['-scrollspeed_spin-']
+                if isint(displayset_values['-scrollspeed_spin-']) == False or\
+                   isint(displayset_values['-displaydelay_input-']) == False or\
+                   isint(displayset_values['-fadeinspeed_input-']) == False or\
+                   isint(displayset_values['-fadeoutspeed_input-']) == False or\
+                   isint(displayset_values['-startdelay_input-']) == False:
 
-                break
+                    dialogwindow('一部数値が無効です')
+
+                else:
+
+                    streamtext_scrollspeed = int(displayset_values['-scrollspeed_spin-'])
+                    streamtext_displaydelay = int(displayset_values['-displaydelay_input-'])
+                    streamtext_fadeinspeed = int(displayset_values['-fadeinspeed_input-'])
+                    streamtext_fadeoutspeed = int(displayset_values['-fadeoutspeed_input-'])
+                    streamtext_startdelay = int(displayset_values['-startdelay_input-'])
+                    break
 
         displayset_window.close()
 
     #プリセット実行
     if main_event == '実行':
 
-        preset_name = str(main_values['-preset_name-'])
-
-        search_word = str(main_values['-search_word-'])
-        nogood_word = str(main_values['-nogood_word-'])
-
-        imageurl_exclusion = int(main_values['-imageurl_exclusion-'])
-        reply_exclusion = int(main_values['-reply_exclusion-'])
-        specity_date = str(main_values['-calender_input-'])
-        specity_h = int(main_values['-spin_h-'])
-        specity_m = int(main_values['-spin_m-'])
-        specity_s = int(main_values['-spin_s-'])
-
-        if search_word.replace('\n','') == '' or preset_name == '':
+        if search_word.replace('\n','') == '' or preset_name == '' or main_values['-preset_list_combo-'] == '(新規名称未設定)':
 
             error_message = ''
 
-            if main_values['-preset_name-'] == '':
-                error_message += 'プリセット名を設定してください\n'
+            if main_values['-preset_list_combo-'] == '(新規名称未設定)':
+                error_message += '一度プリセットを保存してください'
 
-            if main_values['-search_word-'].replace('\n','') == '':
-                error_message += '検索ワードを設定してください'
+            else:
 
-            sg.popup_ok(error_message)
+                if main_values['-preset_name-'] == '':
+                    error_message += 'プリセット名を設定してください\n'
+
+                if main_values['-search_word-'].replace('\n','') == '':
+                    error_message += '検索ワードを設定してください'
+
+            dialogwindow(error_message)
 
         else:
 
             #実際に使用するcssを作成
             if streamtext_font_path != '' and streamtext_font_path != 'null':
-                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
+                webscript_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size, streamtext_font_path)
             else:
-                htmlcss_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
+                webscript_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
+
+            webscript_save.save_js_data(\
+            str(streamtext_scrollspeed), str(streamtext_displaydelay),
+            str(streamtext_fadeinspeed), str(streamtext_fadeoutspeed),
+            str(streamtext_startdelay), 1)
 
             #テキスト表示設定をもとに2つのタイプから選択
             if streamtext_displaytype == 1:
@@ -666,3 +753,4 @@ while True:
             subprocess.Popen(['start', 'data/Tweetron_Core.exe', preset_name], shell = True)
 
 main_window.close()
+sys.exit()

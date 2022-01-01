@@ -1,0 +1,13 @@
+#twitter-text-message{
+
+  font-family: sans-serif;
+  font-size: 30px;
+  color: #000000;
+  letter-spacing: 0;
+
+  opacity: 0;
+  white-space: nowrap;
+  margin-left: 250px;
+  overflow: hidden;
+
+}
