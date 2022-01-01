@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="250px" src="RM_img/rm_icon.png">
+  <img width="250px" src="wiki/rm_icon.png">
 </p>
 
 # Tweetron
