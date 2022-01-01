@@ -12,7 +12,7 @@ def make_welcome_window(sg, window_title, png_icon_path):
 
     ]
 
-    return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,500), font = ['Meiryo',12], element_justification='c')
+    return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,500), font = ['Meiryo',12], element_justification = 'c')
 
 
 
@@ -29,7 +29,7 @@ def make_twitteroauth_window(sg, window_title, png_icon_path):
 
     ]
 
-    return sg.Window(window_title, twitter_oauth_layout, icon = png_icon_path, size = (500,200), font = ['Meiryo',12], element_justification='c')
+    return sg.Window(window_title, twitter_oauth_layout, icon = png_icon_path, size = (500,200), font = ['Meiryo',12], element_justification = 'c')
 
 
 
@@ -113,7 +113,7 @@ def make_filterset_window(sg, window_title, png_icon_path, search_command):
     [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((100,15),(20,0)), key = 'Button_OK'),
      sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel')]
 
-     ]
+    ]
 
     return sg.Window('検索コマンド設定', filterset_layout, icon = png_icon_path, size = (500,185), font = ['Meiryo',10])
 
@@ -154,16 +154,17 @@ def make_textset_window(sg, window_title, png_icon_path,
 
     [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((10,15),(20,0)), key = 'Button_OK'),
      sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel'),
-     sg.Button(button_text = '実際に確認する', font = ['Meiryo',8], size = (15,1), pad = ((60,0),(20,0)), key = '-Verification-')]
+     sg.Button(button_text = '確認', font = ['Meiryo',8], size = (15,1), pad = ((60,0),(20,0)), key = '-Verification-')]
 
     ]
 
     return sg.Window('テキスト詳細設定', textset_layout, icon = png_icon_path, size = (500,750), font = ['Meiryo',10], finalize = True)
 
 def make_displayset_window(sg, window_title, png_icon_path,
-                           streamtext_displaytype,
-                           streamtext_scrollspeed_list,
-                           streamtext_scrollspeed):
+                           streamtext_displaytype, streamtext_scrollspeed_list,
+                           streamtext_scrollspeed, streamtext_displaydelay,
+                           streamtext_fadeinspeed, streamtext_fadeoutspeed,
+                           streamtext_startdelay, template_list):
 
     rb_default = []
     if streamtext_displaytype == 1:
@@ -173,28 +174,53 @@ def make_displayset_window(sg, window_title, png_icon_path,
 
     displayset_layout = [
 
-    [sg.Image(filename = 'data/img/ex_img_01.png', pad = ((0,0),(30,0)))],
+    [sg.Image(filename = 'data/img/ex_img_01.png', pad = ((0,0),(30,0))),
 
-    [sg.Radio(text = 'ツイートとユーザーネームを一行に表示する(従来の方式)', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[0], enable_events = True, k = '-rb_01-')],
+     sg.Text(text = '標準テンプレート用設定', pad = ((50,0),(30,0)), font = ['Meiryo',12,'bold'])],
 
-    [sg.Text(text = 'OBS-Twitter-Streamで使用されていた方式です\nツイートとユーザーネームを一行に合わせて表示します', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
+    [sg.Radio(text = 'ツイートとユーザーネームを一行に表示する(従来の方式)', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[0], enable_events = True, k = '-rb_01-'),
 
-    [sg.Text(text = '_____________________________________________________________________________________', pad = ((0,0),(15,0)), font = ['Meiryo',10], text_color = '#bdbdbd')],
+     sg.Text(text = 'テキストのスクロールスピード', pad = ((100,0),(20,0)), font = ['Meiryo',10]),
+     sg.Spin(values = streamtext_scrollspeed_list, initial_value = streamtext_scrollspeed, pad = ((10,0),(20,0)), enable_events = True, readonly = True, k = '-scrollspeed_spin-'),
+     sg.Text(text = '%', pad = ((10,0),(20,0)), font = ['Meiryo',10])],
 
-    [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0)))],
+    [sg.Text(text = 'OBS-Twitter-Streamで使用されていた方式です\nツイートとユーザーネームを一行に合わせて表示します', pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080'),
 
-    [sg.Radio(text = 'ツイートとユーザーネームを分ける', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[1], enable_events = True, k = '-rb_02-')],
+     sg.Text(text = 'テキスト表示時間', pad = ((185,0),(10,0)), font = ['Meiryo',10]),
+     sg.Input(default_text = streamtext_displaydelay, size = (5,1), pad = ((10,0),(10,0)), font = ['Meiryo',10], k = '-displaydelay_input-'),
+     sg.Text(text = '秒', pad = ((10,0),(10,0)), font = ['Meiryo',10]),
+
+     sg.Text(text = 'スクロール開始待機時間', pad = ((10,0),(10,0)), font = ['Meiryo',10]),
+     sg.Input(default_text = streamtext_startdelay, size = (5,1), pad = ((10,0),(10,0)), font = ['Meiryo',10], k = '-startdelay_input-'),
+     sg.Text(text = '秒', pad = ((10,0),(10,0)), font = ['Meiryo',10])],
+
+    [sg.Text(text = '______________________________________________________', pad = ((0,0),(15,0)), font = ['Meiryo',10], text_color = '#bdbdbd'),
+
+     sg.Text(text = 'フェードイン', pad = ((27,0),(0,0)), font = ['Meiryo',10]),
+     sg.Input(default_text = streamtext_fadeinspeed, size = (5,1), pad = ((36,0),(0,0)), font = ['Meiryo',10], k = '-fadeinspeed_input-'),
+     sg.Text(text = '秒', pad = ((10,0),(0,0)), font = ['Meiryo',10]),
+
+     sg.Text(text = 'フェードアウト', pad = ((11,0),(0,0)), font = ['Meiryo',10]),
+     sg.Input(default_text = streamtext_fadeoutspeed, size = (5,1), pad = ((62,0),(0,0)), font = ['Meiryo',10], k = '-fadeoutspeed_input-'),
+     sg.Text(text = '秒', pad = ((10,0),(0,0)), font = ['Meiryo',10])],
+
+    [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0))),
+
+     sg.Button(button_text = '確認', font = ['Meiryo',8], size = (27,1), pad = ((45,0),(0,0)), key = '-verification-'),
+     sg.Button(button_text = '設定初期化', font = ['Meiryo',8], size = (27,1), pad = ((13,0),(0,0)), key = '-setting_init-')],
+
+    [sg.Radio(text = 'ツイートとユーザーネームを分ける', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = rb_default[1], enable_events = True, k = '-rb_02-'),
+
+     sg.Text(text = '外部テンプレートリスト', pad = ((230,0),(0,0)), font = ['Meiryo',12,'bold'])],
 
     [sg.Text(text = 'ツイートとユーザーネームを上下に分けて表示します\nスクリーンネームだけでなくユーザーネームも表示できます\n(上下の間隔は設定できませんのでクロップ機能を使って分けて頂く必要があります)',
-     pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080')],
+     pad = ((0,0),(20,0)), font = ['Meiryo',8], text_color = '#808080'),
 
-    [sg.Text(text = 'テキストのスクロールスピード', pad = ((118,0),(30,0)), font = ['Meiryo',10]),
-     sg.Spin(values = streamtext_scrollspeed_list, initial_value = streamtext_scrollspeed, pad = ((0,0),(30,0)), enable_events = True, readonly = True, k = '-scrollspeed_spin-'),
-     sg.Text(text = '%', pad = ((0,0),(30,0)), font = ['Meiryo',10])],
+     sg.Listbox(template_list, default_values = template_list[0], highlight_background_color = '#4169e1', highlight_text_color = '#ffffff', font = ['Meiryo',8], size = (70,4), pad = ((48,0),(0,0)))],
 
-    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((90,15),(35,0)), key = 'Button_OK'),
-     sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(35,0)), key = 'Button_Cancel')]
+    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (30,1), pad = ((170,15),(35,0)), key = 'Button_OK'),
+     sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (30,1), pad = ((100,0),(35,0)), key = 'Button_Cancel')]
 
     ]
 
-    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (500,550), font = ['Meiryo',10], finalize=True)
+    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,500), font = ['Meiryo',10], finalize = True)
