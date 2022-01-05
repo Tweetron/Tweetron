@@ -38,7 +38,8 @@ def make_setting_window(sg, window_title, png_icon_path,
                         since_rb, reply_exclusion,
                         specity_h, specity_m, specity_s,
                         specity_date, preset_list, dt_now,
-                        time_h_list, time_m_list, time_s_list):
+                        time_h_list, time_m_list, time_s_list,
+                        menu_layout):
 
     if since_rb == 1:
         since_auto_rb = 1
@@ -48,6 +49,8 @@ def make_setting_window(sg, window_title, png_icon_path,
         since_specify_rb = 1
 
     main_layout = [
+
+    [sg.Menu(menu_layout, font = ['Meiryo',8])],
 
     [sg.Text(text = 'プリセット一覧', pad = ((0,10),(10,0)), font = ['Meiryo',10]),
      sg.Combo(values = preset_list, default_value = preset_list[-1], size=(60,1), font = ['Meiryo',8], readonly = True, pad = ((0,0),(10,0)), enable_events = True, key = '-preset_list_combo-'),
@@ -224,3 +227,21 @@ def make_displayset_window(sg, window_title, png_icon_path,
     ]
 
     return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,500), font = ['Meiryo',10], finalize = True)
+
+
+def make_info_window(sg, window_title, png_icon_path, software_version):
+
+    info_layout = [
+
+    [sg.Image(filename = 'data/img/tweetron_icon_info.png', pad = ((0,0),(10,0)))],
+
+    [sg.Text(text = 'Tweetron', pad = ((0,0),(0,0)), font = ['Meiryo',18])],
+    [sg.Text(text = software_version, pad = ((0,0),(0,0)), font = ['Meiryo',10])],
+
+    [sg.Text(text = 'https://github.com/CubeZeero/Tweetron', pad = ((0,0),(30,0)), font = ['Meiryo',10,'underline'], text_color = '#0000ff', enable_events = True, key = '-homepage_link-')],
+
+    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (10,1), pad = ((0,0),(30,0)), key = '-button_ok-')]
+
+    ]
+
+    return sg.Window(window_title, info_layout, icon = png_icon_path, size = (400,370), font = ['Meiryo',10], element_justification = 'c')

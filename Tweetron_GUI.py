@@ -44,16 +44,15 @@ from tkinter import font
 import tkinter
 import sys
 import subprocess
-from pygame import mixer
 import shutil
 import json
 
-from tweetron_library import webscript_save
+from tweetron_library import webscript_save, config_verify
 
 import api_key
 import software_info
 
-import window_layout
+from layout import window_layout, menu_layout
 
 software_version = software_info.VERSION()
 window_title = 'Tweetron ' + software_version
@@ -191,6 +190,9 @@ def update_setting_window(preset_name_combo):
     global streamtext_fadeinspeed
     global streamtext_fadeoutspeed
     global streamtext_startdelay
+
+    if preset_name_combo != '(新規名称未設定)':
+        config_verify.config_verify(os, configparser, datetime, sg, window_title, png_icon_path, preset_name_combo)
 
     dt_now = datetime.datetime.now()
 
@@ -379,13 +381,30 @@ if twitter_oauth_sw == 1:
     since_rb, reply_exclusion,
     specity_h, specity_m, specity_s,
     specity_date, preset_list, dt_now,
-    time_h_list, time_m_list, time_s_list)
+    time_h_list, time_m_list, time_s_list,
+    menu_layout.main_menu())
 
 while True:
     main_event, main_values = main_window.read()
 
-    if main_event == sg.WIN_CLOSED:
+    if main_event == sg.WIN_CLOSED or '::app_exit::' in main_event:
         break
+
+    #バージョン情報
+    if '::version_info::' in main_event:
+        info_window = window_layout.make_info_window(sg, window_title, png_icon_path, software_version)
+
+        while True:
+            info_event, info_values = info_window.read()
+
+            if info_event == sg.WIN_CLOSED or info_event == '-button_ok-':
+                break
+
+            if info_event == '-homepage_link-':
+                webbrowser.open('https://github.com/CubeZeero/Tweetron/')
+
+        info_window.close()
+
 
     #設定画面のアップデート
     #プリセットの変更時に作動
@@ -398,27 +417,63 @@ while True:
         else:
             main_window['-preset_del-'].update(disabled = False)
 
+
+    #外部プリセットフォルダを登録
+    if '::new_preset::' in main_event:
+
+        new_preset_path = sg.popup_get_folder('new_preset', title = 'new_preset', no_window = True)
+
+        if new_preset_path != '':
+
+            if os.path.exists(new_preset_path + '/search_word.txt') == False or os.path.exists(new_preset_path + '/nogood_word.txt') == False or os.path.exists(new_preset_path + '/config.ini') == False:
+                dialogwindow('プリセットフォルダではありません')
+
+            else:
+                if os.path.exists('data/preset/' + os.path.basename(new_preset_path)) == True:
+                    #すでに存在している場合はコピーできないので一旦削除する
+                    shutil.rmtree('data/preset/' + os.path.basename(new_preset_path))
+                    shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
+                    dialogwindow('正常に上書き登録されました')
+
+                else:
+                    shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
+                    dialogwindow('正常に登録されました')
+
+                #config.ini内のpreset_nameと統一
+                read_config = configparser.RawConfigParser()
+                read_config.read('data/preset/' + os.path.basename(new_preset_path) + '/config.ini')
+
+                if read_config.get('main_setting', 'preset_name') != os.path.basename(new_preset_path):
+                    read_config.set('main_setting', 'preset_name', os.path.basename(new_preset_path))
+
+                    with open('data/preset/' + os.path.basename(new_preset_path) + '/config.ini', 'w') as file:
+                        read_config.write(file)
+
+                #プリセット再読み込み
+                dir_files = os.listdir('data/preset')
+                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                preset_list.append('(新規名称未設定)')
+
+                main_window['-preset_list_combo-'].update(value = preset_list[0], values = preset_list)
+
+                if preset_list[0] == '(新規名称未設定)':
+                    main_window['-preset_del-'].update(disabled = True)
+
+                update_setting_window(preset_list[0])
+
     #プリセット保存
-    if main_event == 'プリセット保存':
-
-        preset_name = str(main_values['-preset_name-'])
-
-        search_word = str(main_values['-search_word-'])
-        nogood_word = str(main_values['-nogood_word-'])
-
-        reply_exclusion = int(main_values['-reply_exclusion-'])
-        specity_date = str(main_values['-calender_input-'])
-        specity_h = int(main_values['-spin_h-'])
-        specity_m = int(main_values['-spin_m-'])
-        specity_s = int(main_values['-spin_s-'])
+    if main_event == 'プリセット保存' or '::save_preset::' in main_event:
 
         #検索ワードかプリセットの名前が指定されていなかった場合エラー処理
-        if search_word.replace('\n','') == '' or preset_name == '':
+        if search_word.replace('\n','') == '' or main_values['-preset_list_combo-'] == '' or '新規名称未設定' in main_values['-preset_list_combo-']:
 
             error_message = ''
 
             if main_values['-preset_name-'] == '':
                 error_message += 'プリセット名を設定してください\n'
+
+            if '新規名称未設定' in main_values['-preset_name-']:
+                error_message += '「新規名称未設定」 以外のプリセット名を設定してください\n'
 
             if main_values['-search_word-'].replace('\n','') == '':
                 error_message += '検索ワードを設定してください'
@@ -426,6 +481,17 @@ while True:
             dialogwindow(error_message)
 
         else:
+
+            preset_name = str(main_values['-preset_name-'])
+
+            search_word = str(main_values['-search_word-'])
+            nogood_word = str(main_values['-nogood_word-'])
+
+            reply_exclusion = int(main_values['-reply_exclusion-'])
+            specity_date = str(main_values['-calender_input-'])
+            specity_h = int(main_values['-spin_h-'])
+            specity_m = int(main_values['-spin_m-'])
+            specity_s = int(main_values['-spin_s-'])
 
             #プリセットのフォルダが存在しなかった場合新規作成と見なす
             if os.path.exists('data/preset/' + main_values['-preset_list_combo-']) == False:
@@ -491,26 +557,35 @@ while True:
 
             main_window['-preset_list_combo-'].update(value = preset_name, values = preset_list)
 
+
+
     #プリセット削除
-    if main_event == '-preset_del-':
+    if main_event == '-preset_del-' or '::delete_preset::' in main_event:
 
-        return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path)
+        if main_values['-preset_list_combo-'] == '(新規名称未設定)':
+            dialogwindow('有効なプリセットが選択されていません')
 
-        if return_value == 'Yes':
+        else:
 
-            #フォルダ削除
-            shutil.rmtree('data/preset/' + main_values['-preset_list_combo-'])
+            return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path)
 
-            dir_files = os.listdir('data/preset')
-            preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
-            preset_list.append('(新規名称未設定)')
+            if return_value == 'Yes':
 
-            main_window['-preset_list_combo-'].update(value = preset_list[0], values = preset_list)
+                #フォルダ削除
+                shutil.rmtree('data/preset/' + main_values['-preset_list_combo-'])
 
-            if preset_list[0] == '(新規名称未設定)':
-                main_window['-preset_del-'].update(disabled = True)
+                dir_files = os.listdir('data/preset')
+                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                preset_list.append('(新規名称未設定)')
 
-            update_setting_window(preset_list[0])
+                main_window['-preset_list_combo-'].update(value = preset_list[0], values = preset_list)
+
+                if preset_list[0] == '(新規名称未設定)':
+                    main_window['-preset_del-'].update(disabled = True)
+
+                update_setting_window(preset_list[0])
+
+
 
     #日付設定類の有効化無効化
     if main_event == '-rb_01-':
@@ -520,6 +595,8 @@ while True:
         main_window['-spin_m-'].update(disabled = True)
         main_window['-spin_s-'].update(disabled = True)
 
+
+
     if main_event == '-rb_02-':
         main_window['-calender_button-'].update(disabled = False)
         main_window['-add_nowtime-'].update(disabled = False)
@@ -527,18 +604,24 @@ while True:
         main_window['-spin_m-'].update(disabled = False)
         main_window['-spin_s-'].update(disabled = False)
 
+
+
     #wikiページを開く
-    if main_event == '-wikipage_open-':
+    if main_event == '-wikipage_open-' or '::user_manual::' in main_event:
         webbrowser.open('https://github.com/CubeZeero/Tweetron/wiki')
 
+
+    #現在の時刻に設定
     if main_event == '-add_nowtime-':
         dt_now = datetime.datetime.now()
         main_window['-spin_h-'].update(value = dt_now.hour)
         main_window['-spin_m-'].update(value = dt_now.minute)
         main_window['-spin_s-'].update(value = dt_now.second)
 
+
+
     #検索フィルタ設定
-    if main_event == '-filter_setting-':
+    if main_event == '-filter_setting-' or '::search_command::' in main_event:
 
         filterset_window = window_layout.make_filterset_window(sg, window_title, png_icon_path, search_command)
 
@@ -558,8 +641,10 @@ while True:
 
         filterset_window.close()
 
+
+
     #テキスト表示設定
-    if main_event == '-text_set-':
+    if main_event == '-text_set-' or '::text_setting::' in main_event:
 
         textset_window = window_layout.make_textset_window(\
         sg, window_title, png_icon_path,
@@ -649,8 +734,10 @@ while True:
 
         textset_window.close()
 
+
+
     #テキスト表示設定
-    if main_event == '-display_set-':
+    if main_event == '-display_set-' or '::text_display::' in main_event:
 
         displayset_window = window_layout.make_displayset_window(\
         sg, window_title, png_icon_path,
@@ -665,6 +752,7 @@ while True:
             if displayset_event == sg.WIN_CLOSED or displayset_event == 'Button_Cancel':
                 break
 
+            #実際に表示速度などを確認
             if displayset_event == '-verification-':
                 webscript_save.save_js_data(\
                 str(displayset_values['-scrollspeed_spin-']), str(displayset_values['-displaydelay_input-']),
@@ -674,6 +762,7 @@ while True:
                 time.sleep(0.5)
                 subprocess.Popen(['start', 'data/verification/verification_js.html'], shell = True)
 
+            #設定の初期化
             if displayset_event == '-setting_init-':
                 return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path)
 
@@ -710,6 +799,8 @@ while True:
 
         displayset_window.close()
 
+
+
     #プリセット実行
     if main_event == '実行':
 
@@ -738,6 +829,7 @@ while True:
             else:
                 webscript_save.save_css(streamtext_font_name, streamtext_color, streamtext_font_size)
 
+            #スクロール速度などをjsとして書き出し
             webscript_save.save_js_data(\
             str(streamtext_scrollspeed), str(streamtext_displaydelay),
             str(streamtext_fadeinspeed), str(streamtext_fadeoutspeed),
@@ -749,8 +841,16 @@ while True:
             else:
                 shutil.copy('./data/html/type_02.html','Tweetron.html')
 
-            os.system("taskkill /f /im Tweetron_Core.exe")
+            #二重起動防止
+            #os.system("taskkill /f /im Tweetron_Core.exe") <- windowsに依存
+
+            for proc in psutil.process_iter():
+                if proc.name() == 'Tweetron_Core.exe':
+                    proc.kill()
+
             subprocess.Popen(['start', 'data/Tweetron_Core.exe', preset_name], shell = True)
+
+
 
 main_window.close()
 sys.exit()
