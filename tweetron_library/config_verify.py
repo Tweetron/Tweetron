@@ -135,4 +135,4 @@ def config_verify(os, configparser, datetime, sg, window_title, png_icon_path, p
         with open('data/preset/' + preset_name + '/config.ini', 'w') as file:
             read_config.write(file)
 
-        sg.popup_ok('プリセットファイルが破損していたため自動修復を行いました', title = window_title, icon = png_icon_path)
+    sg.popup_ok('プリセットファイルが破損していたため自動修復を行いました', title = window_title, icon = png_icon_path)
