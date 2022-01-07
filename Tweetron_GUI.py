@@ -359,7 +359,8 @@ if twitter_oauth_sw == 0:
                     }
 
                     main_config['MainConfig'] = {
-                        'OAuth2_sw': 1
+                        'OAuth2_sw': 1,
+                        'portnumber': '10365'
                     }
 
                     with open('data/ini/config.ini', 'w') as cw:
