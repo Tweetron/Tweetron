@@ -32,6 +32,10 @@ def config_verify(os, configparser, datetime, sg, window_title, png_icon_path, p
             read_config.set('main_setting', 'reply_exclusion', 0)
             msg_sw = 1
 
+        if read_config.has_option('main_setting', 'emoji_exclusion') == False or str(read_config.get('main_setting', 'emoji_exclusion')) == '':
+            read_config.set('main_setting', 'emoji_exclusion', 0)
+            msg_sw = 1
+
         if read_config.has_option('main_setting', 'specity_date') == False or str(read_config.get('main_setting', 'specity_date')) == '':
             read_config.set('main_setting', 'specity_date', dt_now.strftime("%Y-%m-%d"))
             msg_sw = 1
@@ -135,4 +139,4 @@ def config_verify(os, configparser, datetime, sg, window_title, png_icon_path, p
         with open('data/preset/' + preset_name + '/config.ini', 'w') as file:
             read_config.write(file)
 
-    sg.popup_ok('プリセットファイルが破損していたため自動修復を行いました', title = window_title, icon = png_icon_path)
+        sg.popup_ok('プリセットファイルが破損していたため自動修復を行いました', title = window_title, icon = png_icon_path)

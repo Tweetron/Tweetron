@@ -15,6 +15,12 @@ def save_css(font_name, color_code, font_size, font_path = 'null'):
                     '}\n')
 
     css_body_data = ('\n'
+                '#textarea{\n'
+                '\n'
+                '   overflow: hidden;\n'
+                '\n'
+                '}\n'
+                '\n'
                 '#twitter-text-message{\n'
                 '\n'
                 '  font-family: \'datafont\', sans-serif;\n'
@@ -85,7 +91,7 @@ def save_test_html(text):
                 '\n'
                 '  <head>\n'
                 '      <meta charset="utf-8"/>\n'
-                '      <title>obs-twitter-stream</title>\n'
+                '      <title>Tweetron</title>\n'
                 '      <link rel="stylesheet" href="css/style_html.css">\n'
                 '  </head>\n'
                 '\n'
@@ -113,3 +119,10 @@ def save_js_data(scroll_speed, display_delay, fadein_speed, fadeout_speed, start
     elif type == 1:
         with open('data/js/data.js', mode='w', encoding='utf-8') as file:
             file.write(js_data)
+
+def save_js_portnumber(portnumber):
+
+    js_data = "var port_number = '" + str(portnumber) + "';"
+
+    with open('data/js/port_number.js', mode='w', encoding='utf-8') as file:
+        file.write(js_data)

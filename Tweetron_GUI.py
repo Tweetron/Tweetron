@@ -46,6 +46,7 @@ import sys
 import subprocess
 import shutil
 import json
+import psutil
 
 from tweetron_library import webscript_save, config_verify
 
@@ -84,9 +85,6 @@ def isint(s):
     else:
         return True
 
-def dialogwindow(text):
-    sg.popup_ok(text, title = window_title, icon = png_icon_path)
-
 dt_now = datetime.datetime.now()
 
 #コンフィグ読み込み
@@ -100,6 +98,8 @@ twitter_oauth_sw = int(main_config.get('MainConfig', 'oauth2_sw'))
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
+
+port_number = main_config.get('MainConfig', 'portnumber')
 
 #フォントリスト取得
 root = tkinter.Tk()
@@ -146,6 +146,7 @@ search_word = ''
 nogood_word = ''
 since_rb = 0
 reply_exclusion = 0
+emoji_exclusion = 0
 specity_date = dt_now.strftime("%Y-%m-%d")
 specity_h = time_h_list[0]
 specity_m = time_m_list[0]
@@ -158,10 +159,10 @@ streamtext_font_path = ''
 
 streamtext_displaytype = 1
 streamtext_scrollspeed = 80
-streamtext_displaydelay = 5
-streamtext_fadeinspeed = 3
-streamtext_fadeoutspeed = 3
-streamtext_startdelay = 3
+streamtext_displaydelay = 3
+streamtext_fadeinspeed = 2
+streamtext_fadeoutspeed = 2
+streamtext_startdelay = 2
 
 template_list = ['未実装']
 
@@ -175,6 +176,7 @@ def update_setting_window(preset_name_combo):
     global nogood_word
     global since_rb
     global reply_exclusion
+    global emoji_exclusion
     global specity_date
     global specity_h
     global specity_m
@@ -203,6 +205,7 @@ def update_setting_window(preset_name_combo):
         nogood_word = ''
         since_rb = 0
         reply_exclusion = 0
+        emoji_exclusion = 0
         specity_date = dt_now.strftime("%Y-%m-%d")
         specity_h = time_h_list[0]
         specity_m = time_m_list[0]
@@ -215,10 +218,10 @@ def update_setting_window(preset_name_combo):
 
         streamtext_displaytype = 1
         streamtext_scrollspeed = 80
-        streamtext_displaydelay = 5
-        streamtext_fadeinspeed = 3
-        streamtext_fadeoutspeed = 3
-        streamtext_startdelay = 3
+        streamtext_displaydelay = 3
+        streamtext_fadeinspeed = 2
+        streamtext_fadeoutspeed = 2
+        streamtext_startdelay = 2
 
         search_command = ''
 
@@ -231,6 +234,7 @@ def update_setting_window(preset_name_combo):
         main_window['-search_word-'].update(value = search_word)
         main_window['-nogood_word-'].update(value = nogood_word)
         main_window['-reply_exclusion-'].update(value = reply_exclusion)
+        main_window['-emoji_exclusion-'].update(value = emoji_exclusion)
         main_window['-calender_input-'].update(value = specity_date)
         main_window['-spin_h-'].update(value = specity_h)
         main_window['-spin_m-'].update(value = specity_m)
@@ -245,6 +249,7 @@ def update_setting_window(preset_name_combo):
         preset_name = str(read_main_config.get('main_setting', 'preset_name'))
         since_rb = int(read_main_config.get('main_setting', 'since_rb'))
         reply_exclusion = int(read_main_config.get('main_setting', 'reply_exclusion'))
+        emoji_exclusion = int(read_main_config.get('main_setting', 'emoji_exclusion'))
         specity_date = str(read_main_config.get('main_setting', 'specity_date'))
         specity_h = int(read_main_config.get('main_setting', 'specity_h'))
         specity_m = int(read_main_config.get('main_setting', 'specity_m'))
@@ -288,6 +293,7 @@ def update_setting_window(preset_name_combo):
         main_window['-search_word-'].update(value = search_word)
         main_window['-nogood_word-'].update(value = nogood_word)
         main_window['-reply_exclusion-'].update(value = reply_exclusion)
+        main_window['-emoji_exclusion-'].update(value = emoji_exclusion)
         main_window['-calender_input-'].update(value = specity_date)
         main_window['-spin_h-'].update(value = specity_h)
         main_window['-spin_m-'].update(value = specity_m)
@@ -336,9 +342,9 @@ if twitter_oauth_sw == 0:
 
                     except Exception as error_result:
                         if '401' in str(error_result):
-                            dialogwindow('有効なPINコードではありません\nもう一度お試しください')
+                            sg.popup_ok('有効なPINコードではありません\nもう一度お試しください', title = window_title, icon = png_icon_path, modal = True)
                         else:
-                            dialogwindow('エラーが発生しました\nもう一度お試しください')
+                            sg.popup_ok('エラーが発生しました\nもう一度お試しください', title = window_title, icon = png_icon_path, modal = True)
 
                         main_window.Element('-Auth_Button-').Update(disabled = False)
                         break
@@ -359,7 +365,7 @@ if twitter_oauth_sw == 0:
                     with open('data/ini/config.ini', 'w') as cw:
                         main_config.write(cw)
 
-                    dialogwindow('認証が完了しました')
+                    sg.popup_ok('認証が完了しました', title = window_title, icon = png_icon_path, modal = True)
                     twitter_oauth_sw = 1
 
                     main_window.close()
@@ -406,6 +412,37 @@ while True:
         info_window.close()
 
 
+    if '::global_setting::' in main_event:
+        globalsetting_window = window_layout.make_globalsetting_window(sg, window_title, png_icon_path, port_number)
+
+        while True:
+            globalsetting_event, globalsetting_values = globalsetting_window.read()
+
+            if globalsetting_event == sg.WIN_CLOSED or globalsetting_event == '-button_cancel-':
+                break
+
+            if globalsetting_event == '-button_ok-':
+
+                if isint(globalsetting_values['-portnumber_input-']) == True:
+                    port_number = globalsetting_values['-portnumber_input-']
+
+                    webscript_save.save_js_portnumber(str(port_number))
+
+                    write_setting_config = configparser.RawConfigParser()
+                    write_setting_config.read('data/ini/config.ini')
+                    write_setting_config.set('MainConfig', 'portnumber', str(port_number))
+
+                    with open('data/ini/config.ini', 'w') as file:
+                        write_setting_config.write(file)
+
+                    break
+
+                else:
+                    sg.popup_ok('無効な設定が含まれています', title = window_title, icon = png_icon_path)
+
+        globalsetting_window.close()
+
+
     #設定画面のアップデート
     #プリセットの変更時に作動
     if main_event == '-preset_list_combo-':
@@ -421,23 +458,23 @@ while True:
     #外部プリセットフォルダを登録
     if '::new_preset::' in main_event:
 
-        new_preset_path = sg.popup_get_folder('new_preset', title = 'new_preset', no_window = True)
+        new_preset_path = sg.popup_get_folder('new_preset', title = 'new_preset', no_window = True, modal = True)
 
         if new_preset_path != '':
 
             if os.path.exists(new_preset_path + '/search_word.txt') == False or os.path.exists(new_preset_path + '/nogood_word.txt') == False or os.path.exists(new_preset_path + '/config.ini') == False:
-                dialogwindow('プリセットフォルダではありません')
+                sg.popup_ok('プリセットフォルダではありません', title = window_title, icon = png_icon_path, modal = True)
 
             else:
                 if os.path.exists('data/preset/' + os.path.basename(new_preset_path)) == True:
                     #すでに存在している場合はコピーできないので一旦削除する
                     shutil.rmtree('data/preset/' + os.path.basename(new_preset_path))
                     shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
-                    dialogwindow('正常に上書き登録されました')
+                    sg.popup_ok('正常に上書き登録されました', title = window_title, icon = png_icon_path, modal = True)
 
                 else:
                     shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
-                    dialogwindow('正常に登録されました')
+                    sg.popup_ok('正常に登録されました', title = window_title, icon = png_icon_path, modal = True)
 
                 #config.ini内のpreset_nameと統一
                 read_config = configparser.RawConfigParser()
@@ -465,7 +502,7 @@ while True:
     if main_event == 'プリセット保存' or '::save_preset::' in main_event:
 
         #検索ワードかプリセットの名前が指定されていなかった場合エラー処理
-        if search_word.replace('\n','') == '' or main_values['-preset_list_combo-'] == '' or '新規名称未設定' in main_values['-preset_list_combo-']:
+        if main_values['-search_word-'].replace('\n','') == '' or main_values['-preset_list_combo-'] == '' or '新規名称未設定' in main_values['-preset_list_combo-'] == True:
 
             error_message = ''
 
@@ -478,7 +515,9 @@ while True:
             if main_values['-search_word-'].replace('\n','') == '':
                 error_message += '検索ワードを設定してください'
 
-            dialogwindow(error_message)
+            print(1)
+
+            sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
 
         else:
 
@@ -488,6 +527,7 @@ while True:
             nogood_word = str(main_values['-nogood_word-'])
 
             reply_exclusion = int(main_values['-reply_exclusion-'])
+            emoji_exclusion = int(main_values['-emoji_exclusion-'])
             specity_date = str(main_values['-calender_input-'])
             specity_h = int(main_values['-spin_h-'])
             specity_m = int(main_values['-spin_m-'])
@@ -517,6 +557,7 @@ while True:
             write_main_config.set('main_setting', 'preset_name', preset_name)
             write_main_config.set('main_setting', 'since_rb', since_rb)
             write_main_config.set('main_setting', 'reply_exclusion', reply_exclusion)
+            write_main_config.set('main_setting', 'emoji_exclusion', emoji_exclusion)
             write_main_config.set('main_setting', 'specity_date', specity_date)
             write_main_config.set('main_setting', 'specity_h', specity_h)
             write_main_config.set('main_setting', 'specity_m', specity_m)
@@ -548,7 +589,7 @@ while True:
             with open('data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
                 file.write(nogood_word)
 
-            dialogwindow('プリセットを保存しました')
+            sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path, modal = True)
 
             #プリセットリストを再度読み込み
             dir_files = os.listdir('data/preset')
@@ -563,11 +604,11 @@ while True:
     if main_event == '-preset_del-' or '::delete_preset::' in main_event:
 
         if main_values['-preset_list_combo-'] == '(新規名称未設定)':
-            dialogwindow('有効なプリセットが選択されていません')
+            sg.popup_ok('有効なプリセットが選択されていません', title = window_title, icon = png_icon_path,modal = True)
 
         else:
 
-            return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path)
+            return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path, modal = True)
 
             if return_value == 'Yes':
 
@@ -718,12 +759,24 @@ while True:
 
                 else:
 
-                    dialogwindow('カラーコードを指定してください')
+                    sg.popup_ok('カラーコードを指定してください', title = window_title, icon = png_icon_path, modal = True)
+
+            if textset_event == '-init-':
+                return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path, modal = True)
+
+                if return_value == 'Yes':
+                    textset_window['-sample_text-'].update('Sampleテキスト', font = ['Meiryo UI',25], text_color = '#000000')
+                    textset_window['-sample_text_input-'].update(value = 'Sampleテキスト')
+                    textset_window['-fontsize_spin-'].update(value = 25)
+                    textset_window['-color_input-'].update(value = '#000000')
+                    textset_window['-font_name_input-'].update(value = 'Meiryo UI')
+                    textset_window['-font_path-'].update(value = '')
 
             if textset_event == 'Button_OK':
 
                 if os.path.exists(textset_values['-font_path-']) == False and textset_values['-font_path-'] != '':
-                    dialogwindow('指定したttfファイルが存在しません')
+                    sg.popup_ok('指定したttfファイルが存在しません', title = window_title, icon = png_icon_path, modal = True)
+
                 else:
                     streamtext_font_size = int(textset_values['-fontsize_spin-'])
                     streamtext_color = textset_values['-color_input-']
@@ -764,15 +817,15 @@ while True:
 
             #設定の初期化
             if displayset_event == '-setting_init-':
-                return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path)
+                return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path, modal = True)
 
                 if return_value == 'Yes':
                     displayset_window['-rb_01-'].update(value = True)
                     displayset_window['-scrollspeed_spin-'].update(value = 80)
-                    displayset_window['-displaydelay_input-'].update(value = '5')
-                    displayset_window['-startdelay_input-'].update(value = '3')
-                    displayset_window['-fadeinspeed_input-'].update(value = '3')
-                    displayset_window['-fadeoutspeed_input-'].update(value = '3')
+                    displayset_window['-displaydelay_input-'].update(value = '3')
+                    displayset_window['-startdelay_input-'].update(value = '2')
+                    displayset_window['-fadeinspeed_input-'].update(value = '2')
+                    displayset_window['-fadeoutspeed_input-'].update(value = '2')
 
             if displayset_event == 'Button_OK':
                 if displayset_values['-rb_01-'] == True:
@@ -786,7 +839,7 @@ while True:
                    isint(displayset_values['-fadeoutspeed_input-']) == False or\
                    isint(displayset_values['-startdelay_input-']) == False:
 
-                    dialogwindow('一部数値が無効です')
+                    sg.popup_ok('一部数値が無効です', title = window_title, icon = png_icon_path, modal = True)
 
                 else:
 
@@ -819,7 +872,7 @@ while True:
                 if main_values['-search_word-'].replace('\n','') == '':
                     error_message += '検索ワードを設定してください'
 
-            dialogwindow(error_message)
+            sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
 
         else:
 

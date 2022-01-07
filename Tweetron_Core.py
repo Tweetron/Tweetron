@@ -53,6 +53,8 @@ from termcolor import colored, cprint
 import colorama
 import re
 import sys
+import json
+from xml.sax.saxutils import unescape
 
 #APIキー読み込み
 import api_key
@@ -64,6 +66,9 @@ version = software_info.VERSION()
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
+
+demoji_json_open = open('data/emoji_codes.json', 'r')
+demoji_json_load = json.load(demoji_json_open)
 
 tweet_send_cnt = 0
 searchword_loop_cnt = 0
@@ -83,6 +88,16 @@ checkid_sw = 0
 nogood_word_list = ''
 
 colorama.init()
+
+#original_src: demoji(https://github.com/bsolomon1124/demoji)
+def delete_emoji(original_string):
+
+    global demoji_json_load
+
+    escp = (re.escape(c) for c in sorted(demoji_json_load, key = len, reverse = True))
+    emoji_pattern = re.compile(r"|".join(escp))
+
+    return emoji_pattern.sub('', original_string)
 
 #それぞれのステータスに色割り当て
 def print_info(text):
@@ -123,6 +138,7 @@ read_main_config.read('data/preset/' + preset_name  + '/config.ini')
 
 since_rb = int(read_main_config.get('main_setting', 'since_rb'))
 reply_exclusion = int(read_main_config.get('main_setting', 'reply_exclusion'))
+emoji_exclusion = int(read_main_config.get('main_setting', 'emoji_exclusion'))
 specity_date = str(read_main_config.get('main_setting', 'specity_date'))
 specity_h = int(read_main_config.get('main_setting', 'specity_h'))
 specity_m = int(read_main_config.get('main_setting', 'specity_m'))
@@ -175,14 +191,19 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
+port_number = main_config.get('MainConfig', 'portnumber')
+
 print_info('再起動をした場合は再度[ Tweetron.html ]を読み込んでください')
-print_info('使用プリセット: ' + preset_name)
+print_info('使用プリセット: ' + preset_name + ' ポート番号: ' + str(port_number))
 print_info('検索ワード: ' + search_text_raw)
+
 
 if nogood_word_list == '':
     print_info('NGワードは設定されていません')
 else:
     print_info('NGワードリスト: ' + nogood_word_list)
+
+print(colored('--------------------------------------------------------------------------------------------------------------', 'green'),)
 
 def search_word_api(si):
 
@@ -207,7 +228,7 @@ def search_word_api(si):
         tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = random.randint(5,10), include_entities = False, tweet_mode='extended', since_id = si)
 
     for result in tweets:
-        tweet_text_raw = result.full_text
+        tweet_text_raw = unescape(result.full_text)
 
         if nogood_word != '' and tweet_text_raw not in nogood_word:
 
@@ -217,11 +238,14 @@ def search_word_api(si):
             #画像URLを削除
             tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
 
+            if emoji_exclusion == 1:
+                tweet_text = delete_emoji(tweet_text)
+
             #それぞれの表示形態に合わせて整形
             if streamtext_displaytype == 1:
-                tweet_list.append(tweet_text +' (@'+ result.user.name +')')
+                tweet_list.append(tweet_text.replace('\n','') +' (@'+ unescape(result.user.name) +')')
             else:
-                tweet_list.append(result.user.name + ' (@' + result.user.screen_name + ')\n' + tweet_text.replace('\n',''))
+                tweet_list.append(unescape(result.user.name) + ' (@' + unescape(result.user.screen_name) + ')\n' + tweet_text.replace('\n',''))
 
             searchword_loop_cnt += 1
 
@@ -242,6 +266,8 @@ def checkid_relast():
 #JSと接続
 def new_client(client, server):
 
+    dt_now = datetime.datetime.now()
+
     global tweet_send_cnt
     global random_list
     global tweet_list_text
@@ -251,7 +277,7 @@ def new_client(client, server):
     global relast_id_tmp
     global checkid_loop
 
-    print_info('接続されました')
+    print_info(dt_now.strftime('%H:%M:%S') + ' - 接続されました')
 
     tweet_send_cnt = 0
     tweet_list_text = []
@@ -273,7 +299,9 @@ def new_client(client, server):
 
 #JSから切断
 def client_left(client, server):
-    print_info('切断されました')
+    dt_now = datetime.datetime.now()
+
+    print_info(dt_now.strftime('%H:%M:%S') + ' - 切断されました')
 
 #JSからのメッセージ受信
 def message_received(client, server, message):
@@ -370,7 +398,7 @@ def message_received(client, server, message):
 
             print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
 
-server = WebsocketServer(port=10356)
+server = WebsocketServer(port = int(port_number))
 
 server.set_fn_new_client(new_client)
 server.set_fn_client_left(client_left)

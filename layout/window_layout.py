@@ -29,7 +29,7 @@ def make_twitteroauth_window(sg, window_title, png_icon_path):
 
     ]
 
-    return sg.Window(window_title, twitter_oauth_layout, icon = png_icon_path, size = (500,200), font = ['Meiryo',12], element_justification = 'c')
+    return sg.Window('PINコード認証', twitter_oauth_layout, icon = png_icon_path, size = (500,200), font = ['Meiryo',12], element_justification = 'c', modal = True)
 
 
 
@@ -70,16 +70,16 @@ def make_setting_window(sg, window_title, png_icon_path,
     [sg.Radio(text = '検索開始時から投稿されたツイートのみ取得', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = since_auto_rb, enable_events = True, k = '-rb_01-'),
      sg.Radio(text = '指定した日時から投稿されたツイートのみ取得', font = ['Meiryo',10], pad = ((57,0),(20,0)), group_id = 0, default = since_specify_rb, enable_events = True, k = '-rb_02-')],
 
-    [sg.Checkbox(text = 'リプライを除外', font = ['Meiryo',10], pad = ((0,0),(20,0)), default = reply_exclusion, key = '-reply_exclusion-'),
-     sg.Text(text = '日付指定', pad = ((240,10),(20,0)), font = ['Meiryo',10]),
+    [sg.Checkbox(text = 'ツイートから絵文字を削除', font = ['Meiryo',10], pad = ((0,0),(20,0)), default = reply_exclusion, key = '-emoji_exclusion-'),
+     sg.Text(text = '日付指定', pad = ((173,10),(20,0)), font = ['Meiryo',10]),
      sg.Input(default_text = specity_date, size=(30,1), font = ['Meiryo',8], tooltip = '指定された日時から最新のツイートを取得します', pad = ((0,0),(20,0)), readonly = True, key = '-calender_input-'),
 
      sg.CalendarButton('選択', title = '日付選択', target = '-calender_input-', no_titlebar = False, format = '20%y-%m-%d', default_date_m_d_y = (dt_now.month,dt_now.day,dt_now.year), close_when_date_chosen = True,
      month_names = ('1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'),
      day_abbreviations = ('月', '火', '水', '木', '金', '土', '日'), size = (5,1), font = ['Meiryo',8], pad = ((10,0),(20,0)), disabled = False, k = '-calender_button-')],
 
-    [sg.Button(button_text = 'Tweetron 使用方法', font = ['Meiryo',8], size = (20,1), pad = ((0,0),(20,0)), k = '-wikipage_open-'),
-     sg.Button(button_text = '検索コマンド設定', font = ['Meiryo',8], size = (20,1), pad = ((30,0),(20,0)), k = '-filter_setting-'),
+    [sg.Checkbox(text = 'リプライを除外', font = ['Meiryo',10], pad = ((0,0),(20,0)), default = reply_exclusion, key = '-reply_exclusion-'),
+     sg.Button(button_text = '検索コマンド設定', font = ['Meiryo',8], size = (20,1), pad = ((60,0),(20,0)), k = '-filter_setting-'),
      sg.Text(text = '時間指定', pad = ((33,10),(20,0)), font = ['Meiryo',10]),
 
      sg.Spin(values = time_h_list, initial_value = specity_h, font = ['Meiryo',10], pad = ((0,0),(20,0)), readonly = True, disabled = False, k = '-spin_h-'), sg.Text(text = '時', pad = ((10,0),(20,0)), font = ['Meiryo',10]),
@@ -95,7 +95,7 @@ def make_setting_window(sg, window_title, png_icon_path,
 
     ]
 
-    return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,465), font = ['Meiryo',12], finalize = True)
+    return sg.Window(window_title, main_layout, icon = png_icon_path, size = (700,465), font = ['Meiryo',12])
 
 
 
@@ -118,7 +118,7 @@ def make_filterset_window(sg, window_title, png_icon_path, search_command):
 
     ]
 
-    return sg.Window('検索コマンド設定', filterset_layout, icon = png_icon_path, size = (500,185), font = ['Meiryo',10])
+    return sg.Window('検索コマンド設定', filterset_layout, icon = png_icon_path, size = (500,185), font = ['Meiryo',10], modal = True)
 
 def make_textset_window(sg, window_title, png_icon_path,
                         streamtext_font_size, streamtext_color, streamtext_font_name,
@@ -155,13 +155,14 @@ def make_textset_window(sg, window_title, png_icon_path,
     [sg.Input(default_text = streamtext_font_path, size = (53,1), pad = ((0,0),(10,5)), tooltip = 'ttfフォントを指定できます', enable_events = True, k = '-font_path-'),
      sg.FileBrowse(button_text = '参照', target = "-font_path-", file_types=((".ttf file", "*.ttf"),), size = (5,1), pad = ((10,0),(10,5)))],
 
-    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (15,1), pad = ((10,15),(20,0)), key = 'Button_OK'),
-     sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (15,1), pad = ((45,0),(20,0)), key = 'Button_Cancel'),
-     sg.Button(button_text = '確認', font = ['Meiryo',8], size = (15,1), pad = ((60,0),(20,0)), key = '-Verification-')]
+    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (13,1), pad = ((10,0),(20,0)), key = 'Button_OK'),
+     sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (13,1), pad = ((24,0),(20,0)), key = 'Button_Cancel'),
+     sg.Button(button_text = '確認', font = ['Meiryo',8], size = (13,1), pad = ((24,0),(20,0)), key = '-Verification-'),
+     sg.Button(button_text = '初期化', font = ['Meiryo',8], size = (13,1), pad = ((24,0),(20,0)), key = '-init-')]
 
     ]
 
-    return sg.Window('テキスト詳細設定', textset_layout, icon = png_icon_path, size = (500,750), font = ['Meiryo',10], finalize = True)
+    return sg.Window('テキスト詳細設定', textset_layout, icon = png_icon_path, size = (500,750), font = ['Meiryo',10], modal = True)
 
 def make_displayset_window(sg, window_title, png_icon_path,
                            streamtext_displaytype, streamtext_scrollspeed_list,
@@ -226,7 +227,8 @@ def make_displayset_window(sg, window_title, png_icon_path,
 
     ]
 
-    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,500), font = ['Meiryo',10], finalize = True)
+    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,500), font = ['Meiryo',10], modal = True)
+
 
 
 def make_info_window(sg, window_title, png_icon_path, software_version):
@@ -244,4 +246,20 @@ def make_info_window(sg, window_title, png_icon_path, software_version):
 
     ]
 
-    return sg.Window(window_title, info_layout, icon = png_icon_path, size = (400,370), font = ['Meiryo',10], element_justification = 'c')
+    return sg.Window('バージョン情報', info_layout, icon = png_icon_path, size = (400,370), font = ['Meiryo',10], element_justification = 'c', modal = True)
+
+
+
+def make_globalsetting_window(sg, window_title, png_icon_path, port_number):
+
+    globalsetting_layout = [
+
+    [sg.Text(text = 'ポート番号', pad = ((0,0),(10,0)), font = ['Meiryo',10]),
+     sg.Input(default_text = port_number, size = (10,1), pad = ((10,0),(10,0)), font = ['Meiryo',10], k = '-portnumber_input-')],
+
+    [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (10,1), pad = ((0,0),(10,0)), key = '-button_ok-'),
+     sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (10,1), pad = ((10,0),(10,0)), key = '-button_cancel-')]
+
+    ]
+
+    return sg.Window('環境設定', globalsetting_layout, icon = png_icon_path, size = (300,90), font = ['Meiryo',10], element_justification = 'c', modal = True)

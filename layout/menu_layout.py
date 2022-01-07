@@ -17,8 +17,8 @@ def main_menu():
             'テキスト詳細設定 (&F)::text_setting::',
             'テキスト表示形式設定 (&G)::text_display::',
             '検索コマンド設定 (&H)::search_command::',
-            #'---',
-            #'環境設定 (&J)::global_setting::'
+            '---',
+            '環境設定 (&J)::global_setting::'
         ]
     ]
 

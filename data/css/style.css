@@ -3,6 +3,12 @@
   src: local('Meiryo UI');
 }
 
+#textarea{
+
+   overflow: hidden;
+
+}
+
 #twitter-text-message{
 
   font-family: 'datafont', sans-serif;
