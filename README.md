@@ -26,6 +26,8 @@ Windowsのみ対応 (Windows10動作確認済)
 
 [https://github.com/CubeZeero/Tweetron/wiki](https://github.com/CubeZeero/Tweetron/wiki)
 
+## 更新履歴
+
 [Change Log](https://github.com/CubeZeero/Tweetron/wiki/7.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
 
 ## License
