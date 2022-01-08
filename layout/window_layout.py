@@ -35,7 +35,7 @@ def make_twitteroauth_window(sg, window_title, png_icon_path):
 
 def make_setting_window(sg, window_title, png_icon_path,
                         preset_name, search_word, nogood_word,
-                        since_rb, reply_exclusion,
+                        since_rb, reply_exclusion, emoji_exclusion,
                         specity_h, specity_m, specity_s,
                         specity_date, preset_list, dt_now,
                         time_h_list, time_m_list, time_s_list,
@@ -70,7 +70,7 @@ def make_setting_window(sg, window_title, png_icon_path,
     [sg.Radio(text = '検索開始時から投稿されたツイートのみ取得', font = ['Meiryo',10], pad = ((0,0),(20,0)), group_id = 0, default = since_auto_rb, enable_events = True, k = '-rb_01-'),
      sg.Radio(text = '指定した日時から投稿されたツイートのみ取得', font = ['Meiryo',10], pad = ((57,0),(20,0)), group_id = 0, default = since_specify_rb, enable_events = True, k = '-rb_02-')],
 
-    [sg.Checkbox(text = 'ツイートから絵文字を削除', font = ['Meiryo',10], pad = ((0,0),(20,0)), default = reply_exclusion, key = '-emoji_exclusion-'),
+    [sg.Checkbox(text = 'ツイートから絵文字を削除', font = ['Meiryo',10], pad = ((0,0),(20,0)), default = emoji_exclusion, key = '-emoji_exclusion-'),
      sg.Text(text = '日付指定', pad = ((173,10),(20,0)), font = ['Meiryo',10]),
      sg.Input(default_text = specity_date, size=(30,1), font = ['Meiryo',8], tooltip = '指定された日時から最新のツイートを取得します', pad = ((0,0),(20,0)), readonly = True, key = '-calender_input-'),
 
