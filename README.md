@@ -6,7 +6,7 @@
 
 [![](https://img.shields.io/github/license/CubeZeero/Tweetron?style=flat-square)](https://github.com/CubeZeero/Tweetron/blob/main/LICENSE)
 [![](https://img.shields.io/github/repo-size/CubeZeero/Tweetron?style=flat-square)](https://github.com/CubeZeero/Tweetron/)
-[![](https://img.shields.io/github/downloads/CubeZeero/Tweetron/total?color=366AB3&label=Tweetron%20Download&style=flat-square)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.5.0(Beta))
+[![](https://img.shields.io/github/downloads/CubeZeero/Tweetron/total?color=366AB3&label=Tweetron%20Download&style=flat-square)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.5.1(Beta))
 
 TweetronはOBSブラウザーソースを使用してツイートを画面上に表示するツールソフトです
 
@@ -18,7 +18,7 @@ Windowsのみ対応 (Windows10動作確認済)
 
 (現在ベータテスト版を配布しています)
 
-[Download ver0.5.0(Beta)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.5.0(Beta))
+[Download ver0.5.1(Beta)](https://github.com/CubeZeero/Tweetron/releases/tag/ver0.5.1(Beta))
 
 ## 使用方法
 
