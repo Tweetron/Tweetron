@@ -385,7 +385,7 @@ if twitter_oauth_sw == 1:
     main_window = window_layout.make_setting_window(\
     sg, window_title, png_icon_path,
     preset_name, search_word, nogood_word,
-    since_rb, reply_exclusion,
+    since_rb, reply_exclusion, emoji_exclusion,
     specity_h, specity_m, specity_s,
     specity_date, preset_list, dt_now,
     time_h_list, time_m_list, time_s_list,

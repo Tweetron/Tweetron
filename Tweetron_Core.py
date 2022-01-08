@@ -67,9 +67,6 @@ consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
 
-demoji_json_open = open('data/emoji_codes.json', 'r')
-demoji_json_load = json.load(demoji_json_open)
-
 tweet_send_cnt = 0
 searchword_loop_cnt = 0
 searchword_loop_cnt_tmp = 0
@@ -130,6 +127,9 @@ if os.path.isdir('data/preset/' + preset_name) == False:
     time.sleep(10)
 
     sys.exit()
+
+demoji_json_open = open('data/emoji_codes.json', 'r')
+demoji_json_load = json.load(demoji_json_open)
 
 #プリセット設定読み込み
 read_main_config = configparser.RawConfigParser()
@@ -230,8 +230,13 @@ def search_word_api(si):
     for result in tweets:
         tweet_text_raw = unescape(result.full_text)
 
-        if nogood_word != '' and tweet_text_raw not in nogood_word:
+        ng_flag = 0
 
+        for nogood_word_if in nogood_word:
+            if nogood_word != '' and nogood_word_if in tweet_text_raw:
+                ng_flag = 1
+
+        if ng_flag == 0:
             if searchword_loop_cnt == 0:
                 relast_id = result.id_str
 
