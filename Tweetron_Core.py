@@ -40,7 +40,6 @@ figlet_text = r'''
 
 '''
 
-#ライブラリインポート
 import tweepy
 import webbrowser
 import configparser
@@ -55,17 +54,71 @@ import re
 import sys
 import json
 from xml.sax.saxutils import unescape
+import argparse
 
-#APIキー読み込み
+from tweetron_library import webscript_save, utility, tweetron_variable
+
 import api_key
 
 import software_info
 version = software_info.VERSION()
 
-#APIキー割り当て
+
+
+parser = argparse.ArgumentParser(description = 'Tweetron ver' + version)
+
+parser.add_argument('--preset_name', required = True)
+args = parser.parse_args()
+preset_name = args.preset_name
+
+
+
+#original_src: demoji(https://github.com/bsolomon1124/demoji)
+demoji_json_open = open('data/emoji_codes.json', 'r')
+demoji_json_load = json.load(demoji_json_open)
+
+def delete_emoji(original_string):
+
+    global demoji_json_load
+
+    escp = (re.escape(c) for c in sorted(demoji_json_load, key = len, reverse = True))
+    emoji_pattern = re.compile(r"|".join(escp))
+
+    return emoji_pattern.sub('', original_string)
+
+colorama.init()
+
+def print_info(text):
+    print(colored('[INFO] ', 'green'), text)
+
+def print_warning(text):
+    print(colored('[WARNING] ', 'yellow'), text)
+
+def print_error(text):
+    print(colored('[ERROR] ', 'red'), text)
+
+settingvalue_dict_all = tweetron_variable.reset_settingvalue_dict_all(datetime)
+datetime_now = datetime.datetime.now()
+
+
+
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
+
+main_config = configparser.ConfigParser()
+main_config.read('data/ini/config.ini', encoding='utf-8')
+
+access_token = main_config.get('TwitterAPI', 'access_token')
+access_token_secret = main_config.get('TwitterAPI', 'access_token_secret')
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
+
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth, wait_on_rate_limit=True)
+
+port_number = main_config.get('MainConfig', 'portnumber')
+
+
 
 tweet_send_cnt = 0
 searchword_loop_cnt = 0
@@ -84,27 +137,7 @@ checkid_sw = 0
 
 nogood_word_list = ''
 
-colorama.init()
 
-#original_src: demoji(https://github.com/bsolomon1124/demoji)
-def delete_emoji(original_string):
-
-    global demoji_json_load
-
-    escp = (re.escape(c) for c in sorted(demoji_json_load, key = len, reverse = True))
-    emoji_pattern = re.compile(r"|".join(escp))
-
-    return emoji_pattern.sub('', original_string)
-
-#それぞれのステータスに色割り当て
-def print_info(text):
-    print(colored('[INFO] ', 'green'), text)
-
-def print_warning(text):
-    print(colored('[WARNING] ', 'yellow'), text)
-
-def print_error(text):
-    print(colored('[ERROR] ', 'red'), text)
 
 os.system('title Tweetron v' + version)
 
@@ -114,42 +147,20 @@ print(colored('https://github.com/CubeZeero/Tweetron', 'cyan'))
 print(colored('(C)Cube', 'cyan'))
 print('\n')
 
-try:
-    preset_name = sys.argv[1]
-except:
-    print_error('TweetronCore.exe を直接起動せずに Tweetron.exe の[実行]から起動してください')
-    time.sleep(10)
 
-    sys.exit()
 
-if os.path.isdir('data/preset/' + preset_name) == False:
-    print_error('プリセット [' + preset_name + '] は存在しません 10秒後にシャットダウンします')
-    time.sleep(10)
-
-    sys.exit()
-
-demoji_json_open = open('data/emoji_codes.json', 'r')
-demoji_json_load = json.load(demoji_json_open)
-
-#プリセット設定読み込み
 read_main_config = configparser.RawConfigParser()
-
 read_main_config.read('data/preset/' + preset_name  + '/config.ini')
 
-since_rb = int(read_main_config.get('main_setting', 'since_rb'))
-reply_exclusion = int(read_main_config.get('main_setting', 'reply_exclusion'))
-emoji_exclusion = int(read_main_config.get('main_setting', 'emoji_exclusion'))
-specity_date = str(read_main_config.get('main_setting', 'specity_date'))
-specity_h = int(read_main_config.get('main_setting', 'specity_h'))
-specity_m = int(read_main_config.get('main_setting', 'specity_m'))
-specity_s = int(read_main_config.get('main_setting', 'specity_s'))
-search_command = str(read_main_config.get('filter_setting', 'search_command'))
-streamtext_displaytype = int(read_main_config.get('textdisplay_setting', 'streamtext_displaytype'))
+for key_p_name in settingvalue_dict_all.keys():
+    for key_c_name in settingvalue_dict_all[key_p_name].keys():
+        if utility.isint(read_main_config.get(key_p_name, key_c_name)) == True:
+            settingvalue_dict_all[key_p_name][key_c_name] = int(read_main_config.get(key_p_name, key_c_name))
+        else:
+            settingvalue_dict_all[key_p_name][key_c_name] = read_main_config.get(key_p_name, key_c_name)
 
-if search_command == 'null':
-    search_command = ''
 
-#検索ワード読み込み
+
 with open('data/preset/' + preset_name + '/search_word.txt') as file:
     for i in range(sum(1 for line in open('data/preset/' + preset_name + '/search_word.txt'))):
         if i == 0:
@@ -157,53 +168,47 @@ with open('data/preset/' + preset_name + '/search_word.txt') as file:
         else:
             search_word = search_word + ' OR ' + file.readline().rstrip(os.linesep)
 
-#NGワード読み込み
+
+
 with open('data/preset/' + preset_name + '/nogood_word.txt') as file:
     nogood_word = file.readlines()
 
 for ngword in nogood_word:
     nogood_word_list = nogood_word_list + ngword + ', '
 
-#リプライ除外
-if reply_exclusion == 1:
+
+
+if settingvalue_dict_all['main_setting']['reply_exclusion'] == 1:
     reply_exclusion_text = 'exclude:replies'
 else:
     reply_exclusion_text = ''
 
-#現在時刻取取得
-datetime_now = datetime.datetime.now()
+if settingvalue_dict_all['filter_setting']['search_command'] == 'null':
+    search_command = ''
 
-if since_rb == 1:
+if settingvalue_dict_all['main_setting']['since_rb'] == 1:
     since_date = datetime_now.strftime('%Y-%m-%d_%H:%M:%S_JST')
 else:
-    since_date = specity_date + '_' + str(specity_h).zfill(2) + ':' + str(specity_m).zfill(2) + ':' + str(specity_s).zfill(2) + '_JST'
+    since_date = specity_date + '_' + str(settingvalue_dict_all['main_setting']['searchdate_h']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_m']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_s']).zfill(2) + '_JST'
+
+
 
 search_text_raw = search_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
 
-main_config = configparser.ConfigParser()
-main_config.read('data/ini/config.ini', encoding='utf-8')
 
-#TwitterAPI認証
-access_token = main_config.get('TwitterAPI', 'access_token')
-access_token_secret = main_config.get('TwitterAPI', 'access_token_secret')
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
-
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True)
-
-port_number = main_config.get('MainConfig', 'portnumber')
 
 print_info('再起動をした場合は再度[ Tweetron.html ]を読み込んでください')
 print_info('使用プリセット: ' + preset_name + ' ポート番号: ' + str(port_number))
 print_info('検索ワード: ' + search_text_raw)
-
 
 if nogood_word_list == '':
     print_info('NGワードは設定されていません')
 else:
     print_info('NGワードリスト: ' + nogood_word_list)
 
-print(colored('--------------------------------------------------------------------------------------------------------------', 'green'),)
+print('')
+
+
 
 def search_word_api(si):
 
@@ -243,11 +248,11 @@ def search_word_api(si):
             #画像URLを削除
             tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
 
-            if emoji_exclusion == 1:
+            if settingvalue_dict_all['main_setting']['emoji_exclusion'] == 1:
                 tweet_text = delete_emoji(tweet_text)
 
             #それぞれの表示形態に合わせて整形
-            if streamtext_displaytype == 1:
+            if settingvalue_dict_all['display_setting']['text_displaytype'] == 1:
                 tweet_list.append(tweet_text.replace('\n','') +' (@'+ unescape(result.user.name) +')')
             else:
                 tweet_list.append(unescape(result.user.name) + ' (@' + unescape(result.user.screen_name) + ')\n' + tweet_text.replace('\n',''))
@@ -255,6 +260,8 @@ def search_word_api(si):
             searchword_loop_cnt += 1
 
     return tweet_list
+
+
 
 #ツイートID取得
 def checkid_relast():
@@ -267,6 +274,8 @@ def checkid_relast():
         relast_id_return = result.id_str
 
     return relast_id_return
+
+
 
 #JSと接続
 def new_client(client, server):
@@ -302,11 +311,15 @@ def new_client(client, server):
     else:
         print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
 
+
+
 #JSから切断
 def client_left(client, server):
     dt_now = datetime.datetime.now()
 
     print_info(dt_now.strftime('%H:%M:%S') + ' - 切断されました')
+
+
 
 #JSからのメッセージ受信
 def message_received(client, server, message):
@@ -402,6 +415,8 @@ def message_received(client, server, message):
         else:
 
             print_warning('ツイートが存在しません テストツイートを行い、しばらくしてからページを再読込してください')
+
+
 
 server = WebsocketServer(port = int(port_number))
 
