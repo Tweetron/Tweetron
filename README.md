@@ -24,12 +24,12 @@ Windowsのみ対応 (Windows10動作確認済)
 
 使用方法については以下のwikiを御覧ください
 
-[https://github.com/CubeZeero/Tweetron/wiki](https://github.com/CubeZeero/Tweetron/wiki)
+[https://github.com/Tweetron/Tweetron/wiki](https://github.com/Tweetron/Tweetron/wiki)
 
 ## 更新履歴
 
-[Change Log](https://github.com/CubeZeero/Tweetron/wiki/8.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
+[Change Log](https://github.com/Tweetron/Tweetron/wiki/8.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
 
 ## License
 
-[MIT License](https://github.com/CubeZeero/Tweetron/blob/main/LICENSE)
+[MIT License](https://github.com/Tweetron/Tweetron/blob/main/LICENSE)
