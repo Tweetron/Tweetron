@@ -161,7 +161,7 @@ def make_displayset_window(sg, window_title, png_icon_path,
                            text_scrollspeed_list, template_list,
                            text_displaytype, text_scrollspeed,
                            text_displaydelay, text_fadeinspeed,
-                           text_fadeoutspeed, text_startdelay):
+                           text_fadeoutspeed, text_startdelay, text_loadloop):
 
     rb_default = []
     if text_displaytype == 1:
@@ -191,7 +191,7 @@ def make_displayset_window(sg, window_title, png_icon_path,
      sg.Input(default_text = text_startdelay, size = (5,1), pad = ((10,0),(10,0)), font = ['Meiryo',10], k = '-startdelay_input-'),
      sg.Text(text = '秒', pad = ((10,0),(10,0)), font = ['Meiryo',10])],
 
-    [sg.Text(text = '______________________________________________________', pad = ((0,0),(15,0)), font = ['Meiryo',10], text_color = '#bdbdbd'),
+    [sg.Text(text = '______________________________________________________', pad = ((0,0),(35,0)), font = ['Meiryo',10], text_color = '#bdbdbd'),
 
      sg.Text(text = 'フェードイン', pad = ((27,0),(0,0)), font = ['Meiryo',10]),
      sg.Input(default_text = text_fadeinspeed, size = (5,1), pad = ((36,0),(0,0)), font = ['Meiryo',10], k = '-fadeinspeed_input-'),
@@ -201,7 +201,9 @@ def make_displayset_window(sg, window_title, png_icon_path,
      sg.Input(default_text = text_fadeoutspeed, size = (5,1), pad = ((62,0),(0,0)), font = ['Meiryo',10], k = '-fadeoutspeed_input-'),
      sg.Text(text = '秒', pad = ((10,0),(0,0)), font = ['Meiryo',10])],
 
-    [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(30,0))),
+     [sg.Checkbox(text = '同一ツイートを表示しない', font = ['Meiryo',10], pad = ((460,0),(0,0)), default = text_loadloop, key = '-loadloop_check-')],
+
+    [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(0,0))),
 
      sg.Button(button_text = '確認', font = ['Meiryo',8], size = (27,1), pad = ((45,0),(0,0)), key = '-verification-'),
      sg.Button(button_text = '設定初期化', font = ['Meiryo',8], size = (27,1), pad = ((13,0),(0,0)), key = '-setting_init-')],
@@ -218,9 +220,9 @@ def make_displayset_window(sg, window_title, png_icon_path,
     [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (30,1), pad = ((170,15),(35,0)), key = 'Button_OK'),
      sg.Button(button_text = 'Cancel', font = ['Meiryo',8], size = (30,1), pad = ((100,0),(35,0)), key = 'Button_Cancel')]
 
-    ]
+     ]
 
-    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,500), font = ['Meiryo',10], modal = True)
+    return sg.Window('テキスト表示形式設定', displayset_layout, icon = png_icon_path, size = (900,530), font = ['Meiryo',10], modal = True)
 
 
 
@@ -233,13 +235,15 @@ def make_info_window(sg, window_title, png_icon_path, software_version):
     [sg.Text(text = 'Tweetron', pad = ((0,0),(0,0)), font = ['Meiryo',18])],
     [sg.Text(text = software_version, pad = ((0,0),(0,0)), font = ['Meiryo',10])],
 
-    [sg.Text(text = 'https://github.com/CubeZeero/Tweetron', pad = ((0,0),(30,0)), font = ['Meiryo',10,'underline'], text_color = '#0000ff', enable_events = True, key = '-homepage_link-')],
+    [sg.Text(text = 'Developed by Tweetron Developers', pad = ((0,0),(15,0)), font = ['Meiryo',10])],
+
+    [sg.Text(text = 'https://github.com/Tweetron/', pad = ((0,0),(20,0)), font = ['Meiryo',10,'underline'], text_color = '#0000ff', enable_events = True, key = '-homepage_link-')],
 
     [sg.Button(button_text = 'OK', font = ['Meiryo',8], size = (10,1), pad = ((0,0),(30,0)), key = '-button_ok-')]
 
     ]
 
-    return sg.Window('バージョン情報', info_layout, icon = png_icon_path, size = (400,370), font = ['Meiryo',10], element_justification = 'c', modal = True)
+    return sg.Window('バージョン情報', info_layout, icon = png_icon_path, size = (400,400), font = ['Meiryo',10], element_justification = 'c', modal = True)
 
 
 

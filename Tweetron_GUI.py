@@ -35,8 +35,6 @@ import PySimpleGUI as sg
 import tweepy
 import webbrowser
 import configparser
-import random
-from websocket_server import WebsocketServer
 import time
 import os
 import datetime
@@ -116,7 +114,7 @@ if twitter_oauth_sw == 0:
             break
 
         if main_event == '-wikipage_open-':
-            webbrowser.open('https://github.com/CubeZeero/Tweetron/wiki')
+            webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
 
         if main_event == '-Auth_Button-':
 
@@ -204,7 +202,7 @@ while True:
                 break
 
             if info_event == '-homepage_link-':
-                webbrowser.open('https://github.com/CubeZeero/Tweetron/')
+                webbrowser.open('https://github.com/Tweetron/')
 
         info_window.close()
 
@@ -305,70 +303,76 @@ while True:
 
     if main_event == 'プリセット保存' or '::save_preset::' in main_event:
 
-        #検索ワードかプリセットの名前が指定されていなかった場合エラー処理
-        if main_values['-search_word-'].replace('\n','') == '' or main_values['-preset_list_combo-'] == '' or '新規名称未設定' in main_values['-preset_list_combo-'] == True:
+        if '新規名称未設定' in main_values['-preset_list_combo-'] and os.path.isdir('data/preset/' + main_values['-preset_name-']):
 
-            error_message = ''
-
-            if main_values['-preset_name-'] == '':
-                error_message += 'プリセット名を設定してください\n'
-
-            if '新規名称未設定' in main_values['-preset_name-']:
-                error_message += '「新規名称未設定」 以外のプリセット名を設定してください\n'
-
-            if main_values['-search_word-'].replace('\n','') == '':
-                error_message += '検索ワードを設定してください'
-
-            sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
+            sg.popup_ok('このプリセットはすでに存在しています', title = window_title, icon = png_icon_path, modal = True)
 
         else:
-            for key_name in settingvalue_dict_all['main_setting'].keys():
-                if key_name != 'since_rb':
-                    if main_values['-' + key_name + '-'] == True or main_values['-' + key_name + '-'] == False:
-                        settingvalue_dict_all['main_setting'][key_name] = int(main_values['-' + key_name + '-'])
-                    else:
-                        settingvalue_dict_all['main_setting'][key_name] = str(main_values['-' + key_name + '-'])
 
-            search_word = str(main_values['-search_word-'])
-            nogood_word = str(main_values['-nogood_word-'])
+            #検索ワードかプリセットの名前が指定されていなかった場合エラー処理
+            if main_values['-search_word-'].replace('\n','') == '' or main_values['-preset_list_combo-'] == '' or '新規名称未設定' in main_values['-preset_list_combo-'] == True:
 
-            if os.path.exists('data/preset/' + main_values['-preset_list_combo-']) == False:
-                os.mkdir('data/preset/' + main_values['-preset_name-'])
+                error_message = ''
+
+                if main_values['-preset_name-'] == '':
+                    error_message += 'プリセット名を設定してください\n'
+
+                if '新規名称未設定' in main_values['-preset_name-']:
+                    error_message += '「新規名称未設定」 以外のプリセット名を設定してください\n'
+
+                if main_values['-search_word-'].replace('\n','') == '':
+                    error_message += '検索ワードを設定してください'
+
+                sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
+
             else:
-                os.rename('data/preset/' + main_values['-preset_list_combo-'],'data/preset/' + main_values['-preset_name-'])
+                for key_name in settingvalue_dict_all['main_setting'].keys():
+                    if key_name != 'since_rb':
+                        if main_values['-' + key_name + '-'] == True or main_values['-' + key_name + '-'] == False:
+                            settingvalue_dict_all['main_setting'][key_name] = int(main_values['-' + key_name + '-'])
+                        else:
+                            settingvalue_dict_all['main_setting'][key_name] = str(main_values['-' + key_name + '-'])
 
-            settingvalue_dict_all['main_setting'][('since_rb')] = int(main_values['-rb_01-'])
+                search_word = str(main_values['-search_word-'])
+                nogood_word = str(main_values['-nogood_word-'])
 
-            if settingvalue_dict_all['text_setting']['text_fontpath'] == '':
-                settingvalue_dict_all['text_setting']['text_fontpath'] = 'null'
+                if os.path.exists('data/preset/' + main_values['-preset_list_combo-']) == False:
+                    os.mkdir('data/preset/' + main_values['-preset_name-'])
+                else:
+                    os.rename('data/preset/' + main_values['-preset_list_combo-'],'data/preset/' + main_values['-preset_name-'])
 
-            if settingvalue_dict_all['filter_setting']['search_command'] == '':
-                settingvalue_dict_all['filter_setting']['search_command'] = 'null'
+                settingvalue_dict_all['main_setting'][('since_rb')] = int(main_values['-rb_01-'])
 
-            write_main_config = configparser.RawConfigParser()
+                if settingvalue_dict_all['text_setting']['text_fontpath'] == '':
+                    settingvalue_dict_all['text_setting']['text_fontpath'] = 'null'
 
-            for key_p_key in settingvalue_dict_all.keys():
-                write_main_config.add_section(key_p_key)
+                if settingvalue_dict_all['filter_setting']['search_command'] == '':
+                    settingvalue_dict_all['filter_setting']['search_command'] = 'null'
 
-                for key_c_key in settingvalue_dict_all[key_p_key].keys():
-                    write_main_config.set(key_p_key, key_c_key, settingvalue_dict_all[key_p_key][key_c_key])
+                write_main_config = configparser.RawConfigParser()
 
-            with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
-                write_main_config.write(file)
+                for key_p_key in settingvalue_dict_all.keys():
+                    write_main_config.add_section(key_p_key)
 
-            with open('data/preset/' + main_values['-preset_name-'] + '/search_word.txt', mode='w') as file:
-                file.write(search_word)
+                    for key_c_key in settingvalue_dict_all[key_p_key].keys():
+                        write_main_config.set(key_p_key, key_c_key, settingvalue_dict_all[key_p_key][key_c_key])
 
-            with open('data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
-                file.write(nogood_word)
+                with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
+                    write_main_config.write(file)
 
-            sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path, modal = True)
+                with open('data/preset/' + main_values['-preset_name-'] + '/search_word.txt', mode='w') as file:
+                    file.write(search_word)
 
-            dir_files = os.listdir('data/preset')
-            preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
-            preset_list.append('(新規名称未設定)')
+                with open('data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
+                    file.write(nogood_word)
 
-            main_window['-preset_list_combo-'].update(value = settingvalue_dict_all['main_setting']['preset_name'], values = preset_list)
+                sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path, modal = True)
+
+                dir_files = os.listdir('data/preset')
+                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                preset_list.append('(新規名称未設定)')
+
+                main_window['-preset_list_combo-'].update(value = settingvalue_dict_all['main_setting']['preset_name'], values = preset_list)
 
 
 
@@ -418,7 +422,7 @@ while True:
 
 
     if '::user_manual::' in main_event:
-        webbrowser.open('https://github.com/CubeZeero/Tweetron/wiki')
+        webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
 
 
 
@@ -471,14 +475,18 @@ while True:
                 textset_window['-sample_text-'].update(font = [font_name,textset_values['-fontsize_spin-']])
 
             if textset_event == '-color_input-':
+                color_code_text = textset_values['-color_input-']
+                if len(color_code_text) > 7:
+                    color_code_text = color_code_text[:-1]
                 try:
-                    color_code_text = textset_values['-color_input-']
+                    #color_code_text = textset_values['-color_input-']
                     textset_window['-sample_text-'].update(text_color = color_code_text)
                 except:
-                    color_code_text = textset_values['-color_input-']
+                    #color_code_text = textset_values['-color_input-']
                     if len(color_code_text) == 0 or color_code_text[0] != '#':
                         color_code_text = '#'
-                    textset_window['-color_input-'].update(value = color_code_text)
+
+                textset_window['-color_input-'].update(value = color_code_text)
 
             if textset_event == '-font_list-':
                 font_name = textset_values['-font_list-'][0]
@@ -497,7 +505,7 @@ while True:
             if textset_event == '-Verification-':
                 if len(textset_values['-color_input-']) == 7:
 
-                    if textset_values['-font_path-'] != '' and os.path.exists(textset_values['-font_path-']) == True and textset_values['-font_path-'][-3:] == 'ttf':
+                    if textset_values['-font_path-'] != '' and os.path.exists(textset_values['-font_path-']) and (textset_values['-font_path-'][-3:] == 'ttf' or textset_values['-font_path-'][-3:] == 'TTF'):
                         webscript_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'], textset_values['-font_path-'])
                     else:
                         webscript_save.save_test_css(textset_values['-font_name_input-'], textset_values['-color_input-'], textset_values['-fontsize_spin-'])
@@ -571,6 +579,7 @@ while True:
                     displayset_window['-startdelay_input-'].update(value = '2')
                     displayset_window['-fadeinspeed_input-'].update(value = '2')
                     displayset_window['-fadeoutspeed_input-'].update(value = '2')
+                    displayset_window['-loadloop_check-'].update(value = True)
 
             if displayset_event == 'Button_OK':
                 if displayset_values['-rb_01-'] == True:
@@ -592,6 +601,7 @@ while True:
                     settingvalue_dict_all['display_setting']['text_fadeinspeed'] = int(displayset_values['-fadeinspeed_input-'])
                     settingvalue_dict_all['display_setting']['text_fadeoutspeed'] = int(displayset_values['-fadeoutspeed_input-'])
                     settingvalue_dict_all['display_setting']['text_startdelay'] = int(displayset_values['-startdelay_input-'])
+                    settingvalue_dict_all['display_setting']['text_loadloop'] = int(displayset_values['-loadloop_check-'])
                     break
 
         displayset_window.close()
@@ -633,13 +643,11 @@ while True:
             elif settingvalue_dict_all['display_setting']['text_displaytype'] == 2:
                 shutil.copy('./data/html/type_02.html','Tweetron.html')
 
-            #os.system("taskkill /f /im Tweetron_Core.exe") <- windowsに依存
-
             for proc in psutil.process_iter():
                 if proc.name() == 'Tweetron_Core.exe':
                     proc.kill()
 
-            subprocess.Popen(['start', 'data/Tweetron_Core.exe', settingvalue_dict_all['main_setting']['preset_name']], shell = True)
+            subprocess.Popen('start data/Tweetron_Core.exe --preset_name ' + settingvalue_dict_all['main_setting']['preset_name'] + ' --debug_mode 0', shell = True)
 
 
 

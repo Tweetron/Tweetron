@@ -31,7 +31,8 @@ def reset_settingvalue_dict_all(datetime):
             'text_displaydelay': 3,
             'text_fadeinspeed': 2,
             'text_fadeoutspeed': 2,
-            'text_startdelay': 2
+            'text_startdelay': 2,
+            'text_loadloop': 1
         }
     }
 
