@@ -6,7 +6,7 @@
 
 [![](https://img.shields.io/github/license/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/blob/main/LICENSE)
 [![](https://img.shields.io/github/repo-size/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/)
-[![](https://img.shields.io/github/downloads/Tweetron/Tweetron/total?color=366AB3&label=Tweetron%20Download&style=flat-square)](https://github.com/Tweetron/Tweetron/releases/tag/ver0.5.2(Beta))
+[![](https://img.shields.io/github/downloads/Tweetron/Tweetron/total?color=366AB3&label=Tweetron%20Download&style=flat-square)](https://github.com/Tweetron/Tweetron/releases/tag/ver0.5.3(Beta))
 
 [https://tweetron.cubezeero.com](https://tweetron.cubezeero.com)
 
@@ -20,7 +20,7 @@ Windowsのみ対応 (Windows10動作確認済)
 
 (現在ベータテスト版を配布しています)
 
-[Download ver0.5.2(Beta)](https://github.com/Tweetron/Tweetron/releases/tag/ver0.5.2(Beta))
+[Download ver0.5.3(Beta)](https://github.com/Tweetron/Tweetron/releases/tag/ver0.5.3(Beta))
 
 ## 使用方法
 
