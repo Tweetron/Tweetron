@@ -51,7 +51,7 @@ def save_css(font_name, color_code, font_size, font_path = 'null'):
 
     css_data = css_font_data + css_body_data
 
-    with open('data/css/style.css', mode='w', encoding='utf-8') as file:
+    with open('tweetron_data/css/style.css', mode='w', encoding='utf-8') as file:
         file.write(css_data)
 
 def save_test_css(font_name, color_code, font_size, font_path = 'null'):
@@ -81,7 +81,7 @@ def save_test_css(font_name, color_code, font_size, font_path = 'null'):
 
     css_data = css_font_data + css_body_data
 
-    with open('data/verification/css/style_html.css', mode='w', encoding='utf-8') as file:
+    with open('tweetron_data/verification/css/style_html.css', mode='w', encoding='utf-8') as file:
         file.write(css_data)
 
 def save_test_html(text):
@@ -101,7 +101,7 @@ def save_test_html(text):
                 '\n'
                 '</html>')
 
-    with open('data/verification/verification.html', mode='w', encoding='utf-8') as file:
+    with open('tweetron_data/verification/verification.html', mode='w', encoding='utf-8') as file:
         file.write(html_data)
 
 def save_js_data(scroll_speed, display_delay, fadein_speed, fadeout_speed, start_delay, type):
@@ -113,16 +113,16 @@ def save_js_data(scroll_speed, display_delay, fadein_speed, fadeout_speed, start
                'var start_delay = ' + start_delay + ';')
 
     if type == 0:
-        with open('data/verification/js/verification_data.js', mode='w', encoding='utf-8') as file:
+        with open('tweetron_data/verification/js/verification_data.js', mode='w', encoding='utf-8') as file:
             file.write(js_data)
 
     elif type == 1:
-        with open('data/js/data.js', mode='w', encoding='utf-8') as file:
+        with open('tweetron_data/js/data.js', mode='w', encoding='utf-8') as file:
             file.write(js_data)
 
 def save_js_portnumber(portnumber):
 
     js_data = "var port_number = '" + str(portnumber) + "';"
 
-    with open('data/js/port_number.js', mode='w', encoding='utf-8') as file:
+    with open('tweetron_data/js/port_number.js', mode='w', encoding='utf-8') as file:
         file.write(js_data)

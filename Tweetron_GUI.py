@@ -30,7 +30,12 @@ SOFTWARE.
 
 # coding: utf-8
 
-#ライブラリインポート
+#-------------------------------------------------------------------------------
+
+#Lib import
+
+#-------------------------------------------------------------------------------
+
 import PySimpleGUI as sg
 import tweepy
 import webbrowser
@@ -46,15 +51,21 @@ import shutil
 import json
 import psutil
 
-from layout import window_layout, menu_layout, window_theme
+from tweetron_layout import window_layout, menu_layout, window_theme
 from tweetron_library import webscript_save, utility, tweetron_variable
 
 import api_key
 import software_info
 
+#-------------------------------------------------------------------------------
+
+#read setting file
+
+#-------------------------------------------------------------------------------
+
 software_version = software_info.VERSION()
 window_title = 'Tweetron ' + software_version
-png_icon_path = 'data/img/icon.ico'
+png_icon_path = 'tweetron_data/img/icon.ico'
 font_name = 'Meiryo UI'
 
 consumer_key = api_key.CONSUMER_KEY()
@@ -62,9 +73,10 @@ consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
 
 dt_now = datetime.datetime.now()
+current_path = os.getcwd()
 
 main_config = configparser.ConfigParser()
-main_config.read('data/ini/config.ini', encoding='utf-8')
+main_config.read('tweetron_data/ini/config.ini', encoding='utf-8')
 
 twitter_oauth_sw = int(main_config.get('MainConfig', 'oauth2_sw'))
 port_number = main_config.get('MainConfig', 'portnumber')
@@ -77,15 +89,9 @@ fonts_list = list(font.families())
 fonts_list.sort()
 root.destroy()
 
-dir_files = os.listdir('data/preset')
-preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+dir_files = os.listdir('tweetron_data/preset')
+preset_list = [f for f in dir_files if os.path.isdir(os.path.join('tweetron_data/preset', f))]
 preset_list.append('(新規名称未設定)')
-
-time_h_list = []
-time_m_list = []
-time_s_list = []
-fontsize_list = []
-text_scrollspeed_list = []
 
 search_word = ''
 nogood_word = ''
@@ -93,15 +99,17 @@ nogood_word = ''
 settingvalue_dict_all = tweetron_variable.reset_settingvalue_dict_all(datetime)
 template_list = ['未実装']
 
-for num in range(25):
-    time_h_list.append(num)
-for num in range(61):
-    time_m_list.append(num)
-    time_s_list.append(num)
-for num in range(61):
-    fontsize_list.append(num)
-for num in range(101):
-    text_scrollspeed_list.append(num)
+time_h_list = [num for num in range(25)]
+time_m_list = [num for num in range(61)]
+time_s_list = [num for num in range(61)]
+fontsize_list = [num for num in range(61)]
+text_scrollspeed_list = [num for num in range(101)]
+
+#-------------------------------------------------------------------------------
+
+#twitter authentication
+
+#-------------------------------------------------------------------------------
 
 if twitter_oauth_sw == 0:
 
@@ -110,11 +118,9 @@ if twitter_oauth_sw == 0:
     while True:
         main_event, main_values = main_window.read()
 
-        if main_event == sg.WIN_CLOSED:
-            break
+        if main_event == sg.WIN_CLOSED: break
 
-        if main_event == '-wikipage_open-':
-            webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
+        if main_event == '-wikipage_open-': webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
 
         if main_event == '-Auth_Button-':
 
@@ -147,20 +153,15 @@ if twitter_oauth_sw == 0:
                         main_window.Element('-Auth_Button-').Update(disabled = False)
                         break
 
-                    print(auth.get_access_token)
                     auth.set_access_token(auth.access_token, auth.access_token_secret)
 
-                    main_config['TwitterAPI'] = {
-                        'access_token': auth.access_token,
-                        'access_token_secret': auth.access_token_secret
-                    }
+                    main_config['TwitterAPI']['access_token'] = auth.access_token
+                    main_config['TwitterAPI']['access_token_secret'] = auth.access_token_secret
 
-                    main_config['MainConfig'] = {
-                        'OAuth2_sw': 1,
-                        'portnumber': '10356'
-                    }
+                    main_config['MainConfig']['OAuth2_sw'] = '1'
+                    main_config['MainConfig']['portnumber'] = '10356'
 
-                    with open('data/ini/config.ini', 'w') as cw:
+                    with open('tweetron_data/ini/config.ini', 'w') as cw:
                         main_config.write(cw)
 
                     sg.popup_ok('認証が完了しました', title = window_title, icon = png_icon_path, modal = True)
@@ -172,11 +173,15 @@ if twitter_oauth_sw == 0:
 
             twitter_oauth_window.close()
 
-        if twitter_oauth_sw == 1:
-            break
+        if twitter_oauth_sw == 1: break
 
-    if twitter_oauth_sw == 0:
-        main_window.close()
+    if twitter_oauth_sw == 0: main_window.close()
+
+#-------------------------------------------------------------------------------
+
+#make main window
+
+#-------------------------------------------------------------------------------
 
 if twitter_oauth_sw == 1:
     main_window = window_layout.make_setting_window(\
@@ -189,8 +194,13 @@ if twitter_oauth_sw == 1:
 while True:
     main_event, main_values = main_window.read()
 
-    if main_event == sg.WIN_CLOSED or '::app_exit::' in main_event:
-        break
+    if main_event == sg.WIN_CLOSED or '::app_exit::' in main_event: break
+
+    #-------------------------------------------------------------------------------
+
+    #make version window
+
+    #-------------------------------------------------------------------------------
 
     if '::version_info::' in main_event:
         info_window = window_layout.make_info_window(sg, window_title, png_icon_path, software_version)
@@ -198,14 +208,17 @@ while True:
         while True:
             info_event, info_values = info_window.read()
 
-            if info_event == sg.WIN_CLOSED or info_event == '-button_ok-':
-                break
+            if info_event == sg.WIN_CLOSED or info_event == '-button_ok-': break
 
-            if info_event == '-homepage_link-':
-                webbrowser.open('https://github.com/Tweetron/')
+            if info_event == '-homepage_link-': webbrowser.open('https://github.com/Tweetron/')
 
         info_window.close()
 
+    #-------------------------------------------------------------------------------
+
+    #make global setting window
+
+    #-------------------------------------------------------------------------------
 
     if '::global_setting::' in main_event:
         globalsetting_window = window_layout.make_globalsetting_window(sg, window_title, png_icon_path, port_number)
@@ -213,21 +226,20 @@ while True:
         while True:
             globalsetting_event, globalsetting_values = globalsetting_window.read()
 
-            if globalsetting_event == sg.WIN_CLOSED or globalsetting_event == '-button_cancel-':
-                break
+            if globalsetting_event == sg.WIN_CLOSED or globalsetting_event == '-button_cancel-': break
 
             if globalsetting_event == '-button_ok-':
 
-                if isint(globalsetting_values['-portnumber_input-']) == True:
+                if utility.isint(globalsetting_values['-portnumber_input-']) == True:
                     port_number = globalsetting_values['-portnumber_input-']
 
                     webscript_save.save_js_portnumber(str(port_number))
 
                     write_setting_config = configparser.RawConfigParser()
-                    write_setting_config.read('data/ini/config.ini')
+                    write_setting_config.read('tweetron_data/ini/config.ini')
                     write_setting_config.set('MainConfig', 'portnumber', str(port_number))
 
-                    with open('data/ini/config.ini', 'w') as file:
+                    with open('tweetron_data/ini/config.ini', 'w') as file:
                         write_setting_config.write(file)
 
                     break
@@ -247,10 +259,7 @@ while True:
         nogood_word = update_window_data[1]
         settingvalue_dict_all = update_window_data[2]
 
-        if main_values['-preset_list_combo-'] == '(新規名称未設定)':
-            main_window['-preset_del-'].update(disabled = True)
-        else:
-            main_window['-preset_del-'].update(disabled = False)
+        main_window['-preset_del-'].update(disabled = True) if main_values['-preset_list_combo-'] == '(新規名称未設定)' else main_window['-preset_del-'].update(disabled = False)
 
 
 
@@ -264,34 +273,36 @@ while True:
                 sg.popup_ok('プリセットフォルダではありません', title = window_title, icon = png_icon_path, modal = True)
 
             else:
-                if os.path.exists('data/preset/' + os.path.basename(new_preset_path)) == True:
+                if current_path.replace('\\', '/') + '/tweetron_data/preset' in new_preset_path:
+                    sg.popup_ok('プリセットフォルダ内のプリセットは登録できません', title = window_title, icon = png_icon_path, modal = True)
+
+                elif os.path.exists('tweetron_data/preset/' + os.path.basename(new_preset_path)) == True:
                     #すでに存在している場合はコピーできないので一旦削除する
-                    shutil.rmtree('data/preset/' + os.path.basename(new_preset_path))
-                    shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
+                    shutil.rmtree('tweetron_data/preset/' + os.path.basename(new_preset_path))
+                    shutil.copytree(new_preset_path, 'tweetron_data/preset/' + os.path.basename(new_preset_path))
                     sg.popup_ok('正常に上書き登録されました', title = window_title, icon = png_icon_path, modal = True)
 
                 else:
-                    shutil.copytree(new_preset_path, 'data/preset/' + os.path.basename(new_preset_path))
+                    shutil.copytree(new_preset_path, 'tweetron_data/preset/' + os.path.basename(new_preset_path))
                     sg.popup_ok('正常に登録されました', title = window_title, icon = png_icon_path, modal = True)
 
                 #config.ini内のpreset_nameと統一
                 read_config = configparser.RawConfigParser()
-                read_config.read('data/preset/' + os.path.basename(new_preset_path) + '/config.ini')
+                read_config.read('tweetron_data/preset/' + os.path.basename(new_preset_path) + '/config.ini')
 
                 if read_config.get('main_setting', 'preset_name') != os.path.basename(new_preset_path):
                     read_config.set('main_setting', 'preset_name', os.path.basename(new_preset_path))
 
-                    with open('data/preset/' + os.path.basename(new_preset_path) + '/config.ini', 'w') as file:
+                    with open('tweetron_data/preset/' + os.path.basename(new_preset_path) + '/config.ini', 'w') as file:
                         read_config.write(file)
 
-                dir_files = os.listdir('data/preset')
-                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                dir_files = os.listdir('tweetron_data/preset')
+                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('tweetron_data/preset', f))]
                 preset_list.append('(新規名称未設定)')
 
                 main_window['-preset_list_combo-'].update(value = preset_list[0], values = preset_list)
 
-                if preset_list[0] == '(新規名称未設定)':
-                    main_window['-preset_del-'].update(disabled = True)
+                if preset_list[0] == '(新規名称未設定)': main_window['-preset_del-'].update(disabled = True)
 
                 update_window_data = utility.update_setting_window(sg, os, configparser, datetime, tweetron_variable, main_window, window_title, png_icon_path, preset_list[0])
 
@@ -303,7 +314,7 @@ while True:
 
     if main_event == 'プリセット保存' or '::save_preset::' in main_event:
 
-        if '新規名称未設定' in main_values['-preset_list_combo-'] and os.path.isdir('data/preset/' + main_values['-preset_name-']):
+        if '新規名称未設定' in main_values['-preset_list_combo-'] and os.path.isdir('tweetron_data/preset/' + main_values['-preset_name-']):
 
             sg.popup_ok('このプリセットはすでに存在しています', title = window_title, icon = png_icon_path, modal = True)
 
@@ -314,14 +325,11 @@ while True:
 
                 error_message = ''
 
-                if main_values['-preset_name-'] == '':
-                    error_message += 'プリセット名を設定してください\n'
+                if main_values['-preset_name-'] == '': error_message += 'プリセット名を設定してください\n'
 
-                if '新規名称未設定' in main_values['-preset_name-']:
-                    error_message += '「新規名称未設定」 以外のプリセット名を設定してください\n'
+                if '新規名称未設定' in main_values['-preset_name-']: error_message += '「新規名称未設定」 以外のプリセット名を設定してください\n'
 
-                if main_values['-search_word-'].replace('\n','') == '':
-                    error_message += '検索ワードを設定してください'
+                if main_values['-search_word-'].replace('\n','') == '': error_message += '検索ワードを設定してください'
 
                 sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
 
@@ -336,18 +344,16 @@ while True:
                 search_word = str(main_values['-search_word-'])
                 nogood_word = str(main_values['-nogood_word-'])
 
-                if os.path.exists('data/preset/' + main_values['-preset_list_combo-']) == False:
-                    os.mkdir('data/preset/' + main_values['-preset_name-'])
+                if os.path.exists('tweetron_data/preset/' + main_values['-preset_list_combo-']) == False:
+                    os.mkdir('tweetron_data/preset/' + main_values['-preset_name-'])
                 else:
-                    os.rename('data/preset/' + main_values['-preset_list_combo-'],'data/preset/' + main_values['-preset_name-'])
+                    os.rename('tweetron_data/preset/' + main_values['-preset_list_combo-'],'tweetron_data/preset/' + main_values['-preset_name-'])
 
                 settingvalue_dict_all['main_setting'][('since_rb')] = int(main_values['-rb_01-'])
 
-                if settingvalue_dict_all['text_setting']['text_fontpath'] == '':
-                    settingvalue_dict_all['text_setting']['text_fontpath'] = 'null'
+                if settingvalue_dict_all['text_setting']['text_fontpath'] == '': settingvalue_dict_all['text_setting']['text_fontpath'] = 'null'
 
-                if settingvalue_dict_all['filter_setting']['search_command'] == '':
-                    settingvalue_dict_all['filter_setting']['search_command'] = 'null'
+                if settingvalue_dict_all['filter_setting']['search_command'] == '': settingvalue_dict_all['filter_setting']['search_command'] = 'null'
 
                 write_main_config = configparser.RawConfigParser()
 
@@ -357,22 +363,23 @@ while True:
                     for key_c_key in settingvalue_dict_all[key_p_key].keys():
                         write_main_config.set(key_p_key, key_c_key, settingvalue_dict_all[key_p_key][key_c_key])
 
-                with open('data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
+                with open('tweetron_data/preset/' + main_values['-preset_name-'] + '/config.ini', 'w') as file:
                     write_main_config.write(file)
 
-                with open('data/preset/' + main_values['-preset_name-'] + '/search_word.txt', mode='w') as file:
+                with open('tweetron_data/preset/' + main_values['-preset_name-'] + '/search_word.txt', mode='w') as file:
                     file.write(search_word)
 
-                with open('data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
+                with open('tweetron_data/preset/' + main_values['-preset_name-'] + '/nogood_word.txt', mode='w') as file:
                     file.write(nogood_word)
 
                 sg.popup_ok('プリセットを保存しました', title = window_title, icon = png_icon_path, modal = True)
 
-                dir_files = os.listdir('data/preset')
-                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                dir_files = os.listdir('tweetron_data/preset')
+                preset_list = [pfiles for pfiles in dir_files if os.path.isdir(os.path.join('tweetron_data/preset', pfiles))]
                 preset_list.append('(新規名称未設定)')
 
                 main_window['-preset_list_combo-'].update(value = settingvalue_dict_all['main_setting']['preset_name'], values = preset_list)
+                main_window['-preset_del-'].update(disabled = True) if preset_list[0] == '(新規名称未設定)' else main_window['-preset_del-'].update(disabled = False)
 
 
 
@@ -384,16 +391,15 @@ while True:
             return_value = sg.popup_yes_no('このプリセットを削除しますか？', title = window_title, icon = png_icon_path, modal = True)
 
             if return_value == 'Yes':
-                shutil.rmtree('data/preset/' + main_values['-preset_list_combo-'])
+                shutil.rmtree('tweetron_data/preset/' + main_values['-preset_list_combo-'])
 
-                dir_files = os.listdir('data/preset')
-                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('data/preset', f))]
+                dir_files = os.listdir('tweetron_data/preset')
+                preset_list = [f for f in dir_files if os.path.isdir(os.path.join('tweetron_data/preset', f))]
                 preset_list.append('(新規名称未設定)')
 
                 main_window['-preset_list_combo-'].update(value = preset_list[0], values = preset_list)
 
-                if preset_list[0] == '(新規名称未設定)':
-                    main_window['-preset_del-'].update(disabled = True)
+                if preset_list[0] == '(新規名称未設定)': main_window['-preset_del-'].update(disabled = True)
 
                 update_window_data = utility.update_setting_window(sg, os, configparser, datetime, tweetron_variable, main_window, window_title, png_icon_path, preset_list[0])
 
@@ -421,8 +427,7 @@ while True:
 
 
 
-    if '::user_manual::' in main_event:
-        webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
+    if '::user_manual::' in main_event: webbrowser.open('https://github.com/Tweetron/Tweetron/wiki')
 
 
 
@@ -432,7 +437,11 @@ while True:
         main_window['-searchdate_m-'].update(value = dt_now.minute)
         main_window['-searchdate_s-'].update(value = dt_now.second)
 
+    #-------------------------------------------------------------------------------
 
+    #make filter setting window
+
+    #-------------------------------------------------------------------------------
 
     if main_event == '-filter_setting-' or '::search_command::' in main_event:
 
@@ -441,12 +450,10 @@ while True:
         while True:
             filterset_event, filterset_values = filterset_window.read()
 
-            if filterset_event == sg.WIN_CLOSED or filterset_event == 'Button_Cancel':
-                break
+            if filterset_event == sg.WIN_CLOSED or filterset_event == 'Button_Cancel': break
 
-            if filterset_event == '-command_list-':
-                #Thanks yonoi blog (https://yonoi.com/)
-                webbrowser.open('https://yonoi.com/twitter-search-command/')
+            #Thanks yonoi blog (https://yonoi.com/)
+            if filterset_event == '-command_list-': webbrowser.open('https://yonoi.com/twitter-search-command/')
 
             if filterset_event == 'Button_OK':
                 settingvalue_dict_all['filter_setting']['search_command'] = filterset_values['-filter_input-']
@@ -454,7 +461,11 @@ while True:
 
         filterset_window.close()
 
+    #-------------------------------------------------------------------------------
 
+    #make text setting window
+
+    #-------------------------------------------------------------------------------
 
     if main_event == '-text_set-' or '::text_setting::' in main_event:
 
@@ -468,11 +479,9 @@ while True:
             if textset_event == sg.WIN_CLOSED or textset_event == 'Button_Cancel':
                 break
 
-            if textset_event == '-sample_text_input-':
-                textset_window['-sample_text-'].update(textset_values['-sample_text_input-'])
+            if textset_event == '-sample_text_input-': textset_window['-sample_text-'].update(textset_values['-sample_text_input-'])
 
-            if textset_event == '-fontsize_spin-':
-                textset_window['-sample_text-'].update(font = [font_name,textset_values['-fontsize_spin-']])
+            if textset_event == '-fontsize_spin-': textset_window['-sample_text-'].update(font = [font_name,textset_values['-fontsize_spin-']])
 
             if textset_event == '-color_input-':
                 color_code_text = textset_values['-color_input-']
@@ -497,10 +506,7 @@ while True:
                 textset_window['-sample_text-'].update(font = [textset_values['-font_name_input-'],textset_values['-fontsize_spin-']])
 
             if textset_event == '-font_path-':
-                if os.path.exists(textset_values['-font_path-']) == True:
-                    textset_window['-font_path-'].update(text_color = '#000000')
-                else:
-                    textset_window['-font_path-'].update(text_color = '#ff0000')
+                textset_window['-font_path-'].update(text_color = '#4169e1') if os.path.exists(textset_values['-font_path-']) == True else textset_window['-font_path-'].update(text_color = '#ff0000')
 
             if textset_event == '-Verification-':
                 if len(textset_values['-color_input-']) == 7:
@@ -513,7 +519,7 @@ while True:
                     webscript_save.save_test_html(textset_values['-sample_text_input-'])
 
                     time.sleep(0.5)
-                    subprocess.Popen(['start', 'data/verification/verification_html.html'], shell = True)
+                    subprocess.Popen(['start', 'tweetron_data/verification/verification_html.html'], shell = True)
 
                 else:
 
@@ -545,7 +551,11 @@ while True:
 
         textset_window.close()
 
+    #-------------------------------------------------------------------------------
 
+    #make textdisplay setting window
+
+    #-------------------------------------------------------------------------------
 
     if main_event == '-display_set-' or '::text_display::' in main_event:
 
@@ -557,8 +567,7 @@ while True:
         while True:
             displayset_event, displayset_values = displayset_window.read()
 
-            if displayset_event == sg.WIN_CLOSED or displayset_event == 'Button_Cancel':
-                break
+            if displayset_event == sg.WIN_CLOSED or displayset_event == 'Button_Cancel': break
 
             if displayset_event == '-verification-':
                 webscript_save.save_js_data(\
@@ -567,7 +576,7 @@ while True:
                 str(displayset_values['-startdelay_input-']), 0)
 
                 time.sleep(0.5)
-                subprocess.Popen(['start', 'data/verification/verification_js.html'], shell = True)
+                subprocess.Popen(['start', 'tweetron_data/verification/verification_js.html'], shell = True)
 
             if displayset_event == '-setting_init-':
                 return_value = sg.popup_yes_no('設定を初期化しますか？', title = window_title, icon = png_icon_path, modal = True)
@@ -606,7 +615,11 @@ while True:
 
         displayset_window.close()
 
+    #-------------------------------------------------------------------------------
 
+    #start tweetron core
+
+    #-------------------------------------------------------------------------------
 
     if main_event == '実行':
 
@@ -618,11 +631,9 @@ while True:
                 error_message += '一度プリセットを保存してください'
 
             else:
-                if main_values['-preset_name-'] == '':
-                    error_message += 'プリセット名を設定してください\n'
+                if main_values['-preset_name-'] == '': error_message += 'プリセット名を設定してください\n'
 
-                if main_values['-search_word-'].replace('\n','') == '':
-                    error_message += '検索ワードを設定してください'
+                if main_values['-search_word-'].replace('\n','') == '': error_message += '検索ワードを設定してください'
 
             sg.popup_ok(error_message, title = window_title, icon = png_icon_path, modal = True)
 
@@ -639,15 +650,14 @@ while True:
             str(settingvalue_dict_all['display_setting']['text_startdelay']), 1)
 
             if settingvalue_dict_all['display_setting']['text_displaytype'] == 1:
-                shutil.copy('./data/html/type_01.html','Tweetron.html')
+                shutil.copy('./tweetron_data/html/type_01.html','Tweetron.html')
             elif settingvalue_dict_all['display_setting']['text_displaytype'] == 2:
-                shutil.copy('./data/html/type_02.html','Tweetron.html')
+                shutil.copy('./tweetron_data/html/type_02.html','Tweetron.html')
 
             for proc in psutil.process_iter():
-                if proc.name() == 'Tweetron_Core.exe':
-                    proc.kill()
+                if proc.name() == 'Tweetron_Core.exe': proc.kill()
 
-            subprocess.Popen('start data/Tweetron_Core.exe --preset_name ' + settingvalue_dict_all['main_setting']['preset_name'] + ' --debug_mode 0', shell = True)
+            subprocess.Popen('start tweetron_data/Tweetron_Core.exe --preset_name ' + settingvalue_dict_all['main_setting']['preset_name'] + ' --debug_mode 0', shell = True)
 
 
 

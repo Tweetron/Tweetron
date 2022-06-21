@@ -75,7 +75,7 @@ debugmode_sw = bool(int(args.debug_mode))
 
 
 #original_src: demoji(https://github.com/bsolomon1124/demoji)
-demoji_json_open = open('data/emoji_codes.json', 'r', encoding = 'utf-8')
+demoji_json_open = open('tweetron_data/emoji_codes.json', 'r', encoding = 'utf-8')
 demoji_json_load = json.load(demoji_json_open)
 
 def delete_emoji(original_string):
@@ -108,7 +108,7 @@ consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
 
 main_config = configparser.ConfigParser()
-main_config.read('data/ini/config.ini', encoding='utf-8')
+main_config.read('tweetron_data/ini/config.ini', encoding='utf-8')
 
 access_token = main_config.get('TwitterAPI', 'access_token')
 access_token_secret = main_config.get('TwitterAPI', 'access_token_secret')
@@ -147,7 +147,7 @@ print(colored('https://github.com/Tweetron/\n', 'cyan'))
 
 
 read_main_config = configparser.RawConfigParser()
-read_main_config.read('data/preset/' + preset_name  + '/config.ini')
+read_main_config.read('tweetron_data/preset/' + preset_name  + '/config.ini')
 
 for key_p_name in settingvalue_dict_all.keys():
     for key_c_name in settingvalue_dict_all[key_p_name].keys():
@@ -158,8 +158,8 @@ for key_p_name in settingvalue_dict_all.keys():
 
 
 
-with open('data/preset/' + preset_name + '/search_word.txt') as file:
-    for i in range(sum(1 for line in open('data/preset/' + preset_name + '/search_word.txt'))):
+with open('tweetron_data/preset/' + preset_name + '/search_word.txt') as file:
+    for i in range(sum(1 for line in open('tweetron_data/preset/' + preset_name + '/search_word.txt'))):
         if i == 0:
             search_word = file.readline().rstrip(os.linesep)
         else:
@@ -167,26 +167,16 @@ with open('data/preset/' + preset_name + '/search_word.txt') as file:
 
 
 
-with open('data/preset/' + preset_name + '/nogood_word.txt') as file:
+with open('tweetron_data/preset/' + preset_name + '/nogood_word.txt') as file:
     nogood_word = file.readlines()
 
 for ngword in nogood_word:
     nogood_word_list = nogood_word_list + ngword + ', '
 
 loadloop_sw = settingvalue_dict_all['display_setting']['text_loadloop']
-
-if settingvalue_dict_all['main_setting']['reply_exclusion'] == 1:
-    reply_exclusion_text = 'exclude:replies'
-else:
-    reply_exclusion_text = ''
-
-if settingvalue_dict_all['filter_setting']['search_command'] == 'null':
-    search_command = ''
-
-if settingvalue_dict_all['main_setting']['since_rb'] == 1:
-    since_date = datetime_now.strftime('%Y-%m-%d_%H:%M:%S_JST')
-else:
-    since_date = settingvalue_dict_all['main_setting']['searchdate'] + '_' + str(settingvalue_dict_all['main_setting']['searchdate_h']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_m']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_s']).zfill(2) + '_JST'
+reply_exclusion_text = 'exclude:replies' if settingvalue_dict_all['main_setting']['reply_exclusion'] == 1 else ''
+search_command = '' if settingvalue_dict_all['filter_setting']['search_command'] == 'null' else settingvalue_dict_all['filter_setting']['search_command']
+since_date = datetime_now.strftime('%Y-%m-%d_%H:%M:%S_JST') if settingvalue_dict_all['main_setting']['since_rb'] == 1 else settingvalue_dict_all['main_setting']['searchdate'] + '_' + str(settingvalue_dict_all['main_setting']['searchdate_h']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_m']).zfill(2) + ':' + str(settingvalue_dict_all['main_setting']['searchdate_s']).zfill(2) + '_JST'
 
 search_text_raw = search_word + ' -filter:retweets since:' + since_date + ' ' + reply_exclusion_text + ' ' + search_command
 
@@ -197,10 +187,7 @@ if debugmode_sw == True: print_info('デバッグモード: 有効')
 print_info('使用プリセット: ' + preset_name + ' ポート番号: ' + str(port_number))
 print_info('検索ワード: ' + search_text_raw)
 
-if nogood_word_list == '':
-    print_info('NGワードは設定されていません')
-else:
-    print_info('NGワードリスト: ' + nogood_word_list)
+print_info('NGワードは設定されていません') if nogood_word_list == '' else print_info('NGワードリスト: ' + nogood_word_list)
 
 
 
@@ -232,18 +219,15 @@ def search_word_api(si):
         ng_flag = 0
 
         for nogood_word_if in nogood_word:
-            if nogood_word != '' and nogood_word_if in tweet_text_raw:
-                ng_flag = 1
+            if nogood_word != '' and nogood_word_if in tweet_text_raw: ng_flag = 1
 
         if ng_flag == 0:
-            if searchword_loop_cnt == 0:
-                relast_id = result.id_str
+            if searchword_loop_cnt == 0: relast_id = result.id_str
 
             #画像URLを削除
             tweet_text = re.sub(r'https://t.co/\w{10}', '', tweet_text_raw)
 
-            if settingvalue_dict_all['main_setting']['emoji_exclusion'] == 1:
-                tweet_text = delete_emoji(tweet_text)
+            if settingvalue_dict_all['main_setting']['emoji_exclusion'] == 1: tweet_text = delete_emoji(tweet_text)
 
             #それぞれの表示形態に合わせて整形
             if settingvalue_dict_all['display_setting']['text_displaytype'] == 1:
@@ -268,8 +252,7 @@ def checkid_relast():
     tweets = api.search_tweets(q = search_text_raw, result_type = 'recent', count = 3, include_entities = False)
 
     for result in tweets:
-        if lpcnt == 0:
-            relast_id_return = result.id_str
+        if lpcnt == 0: relast_id_return = result.id_str
 
         lpcnt += 1
 
@@ -419,8 +402,7 @@ def message_received(client, server, message):
                     while True:
                         time.sleep(10)
 
-                        if current_client_id != client['id']:
-                            break
+                        if current_client_id != client['id']: break
 
                         checkid = checkid_relast()
                         checkid_loop = 0
