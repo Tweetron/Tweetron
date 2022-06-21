@@ -2,7 +2,7 @@ def make_welcome_window(sg, window_title, png_icon_path):
 
     main_layout = [
 
-    [sg.Image(filename = 'data/img/tweetron_icon.png', pad = ((0,0),(7,0)))],
+    [sg.Image(filename = 'tweetron_data/img/tweetron_icon.png', pad = ((0,0),(7,0)))],
 
     [sg.Text(text = 'Tweetronへようこそ', pad = ((0,0),(0,0)))],
     [sg.Text(text = 'Twitterアカウントの認証を行ってください', pad = ((0,0),(30,0)))],
@@ -171,7 +171,7 @@ def make_displayset_window(sg, window_title, png_icon_path,
 
     displayset_layout = [
 
-    [sg.Image(filename = 'data/img/ex_img_01.png', pad = ((0,0),(30,0))),
+    [sg.Image(filename = 'tweetron_data/img/ex_img_01.png', pad = ((0,0),(30,0))),
 
      sg.Text(text = '標準テンプレート用設定', pad = ((50,0),(30,0)), font = ['Meiryo',12,'bold'])],
 
@@ -203,7 +203,7 @@ def make_displayset_window(sg, window_title, png_icon_path,
 
      [sg.Checkbox(text = '同一ツイートを表示しない', font = ['Meiryo',10], pad = ((460,0),(0,0)), default = text_loadloop, key = '-loadloop_check-')],
 
-    [sg.Image(filename = 'data/img/ex_img_02.png', pad = ((0,0),(0,0))),
+    [sg.Image(filename = 'tweetron_data/img/ex_img_02.png', pad = ((0,0),(0,0))),
 
      sg.Button(button_text = '確認', font = ['Meiryo',8], size = (27,1), pad = ((45,0),(0,0)), key = '-verification-'),
      sg.Button(button_text = '設定初期化', font = ['Meiryo',8], size = (27,1), pad = ((13,0),(0,0)), key = '-setting_init-')],
@@ -230,7 +230,7 @@ def make_info_window(sg, window_title, png_icon_path, software_version):
 
     info_layout = [
 
-    [sg.Image(filename = 'data/img/tweetron_icon_info.png', pad = ((0,0),(10,0)))],
+    [sg.Image(filename = 'tweetron_data/img/tweetron_icon_info.png', pad = ((0,0),(10,0)))],
 
     [sg.Text(text = 'Tweetron', pad = ((0,0),(0,0)), font = ['Meiryo',18])],
     [sg.Text(text = software_version, pad = ((0,0),(0,0)), font = ['Meiryo',10])],

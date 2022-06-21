@@ -13,7 +13,7 @@ def config_verify(sg, os, configparser, datetime, tweetron_variable, window_titl
     settingvalue_dict_all = tweetron_variable.reset_settingvalue_dict_all(datetime)
 
     read_config = configparser.RawConfigParser()
-    read_config.read('data/preset/' + preset_name + '/config.ini')
+    read_config.read('tweetron_data/preset/' + preset_name + '/config.ini')
 
     for key_p_key in settingvalue_dict_all.keys():
         if read_config.has_section(key_p_key) == False:
@@ -24,18 +24,18 @@ def config_verify(sg, os, configparser, datetime, tweetron_variable, window_titl
                 read_config.set(key_p_key, key_c_key, key_c_value)
                 msg_sw = 1
 
-    if os.path.exists('data/preset/' + preset_name + '/search_word.txt') == False:
-        with open('data/preset/' + preset_name + '/search_word.txt', mode='w') as file:
+    if os.path.exists('tweetron_data/preset/' + preset_name + '/search_word.txt') == False:
+        with open('tweetron_data/preset/' + preset_name + '/search_word.txt', mode='w') as file:
             file.write('')
         msg_sw = 1
 
-    if os.path.exists('data/preset/' + preset_name + '/nogood_word.txt') == False:
-        with open('data/preset/' + preset_name + '/nogood_word.txt', mode='w') as file:
+    if os.path.exists('tweetron_data/preset/' + preset_name + '/nogood_word.txt') == False:
+        with open('tweetron_data/preset/' + preset_name + '/nogood_word.txt', mode='w') as file:
             file.write('')
         msg_sw = 1
 
     if msg_sw == 1:
-        with open('data/preset/' + preset_name + '/config.ini', 'w') as file:
+        with open('tweetron_data/preset/' + preset_name + '/config.ini', 'w') as file:
             read_config.write(file)
 
         sg.popup_ok('プリセットファイルが破損していたため自動修復を行いました', title = window_title, icon = png_icon_path)
@@ -74,7 +74,7 @@ def update_setting_window(sg, os, configparser, datetime, tweetron_variable, mai
         config_verify(sg, os, configparser, datetime, tweetron_variable, window_title, png_icon_path, preset_name_combo)
 
         read_main_config = configparser.RawConfigParser()
-        read_main_config.read('data/preset/' + preset_name_combo  + '/config.ini')
+        read_main_config.read('tweetron_data/preset/' + preset_name_combo  + '/config.ini')
 
         for key_p_name in settingvalue_dict_all.keys():
             for key_c_name in settingvalue_dict_all[key_p_name].keys():
@@ -83,10 +83,10 @@ def update_setting_window(sg, os, configparser, datetime, tweetron_variable, mai
                 else:
                     settingvalue_dict_all[key_p_name][key_c_name] = read_main_config.get(key_p_name, key_c_name)
 
-        with open('data/preset/' + preset_name_combo  + '/search_word.txt') as file:
+        with open('tweetron_data/preset/' + preset_name_combo  + '/search_word.txt') as file:
             search_word = file.read()
 
-        with open('data/preset/' + preset_name_combo  + '/nogood_word.txt') as file:
+        with open('tweetron_data/preset/' + preset_name_combo  + '/nogood_word.txt') as file:
             nogood_word = file.read()
 
         main_window['-search_word-'].update(value = search_word)
