@@ -68,6 +68,8 @@ window_title = 'Tweetron ' + software_version
 png_icon_path = 'tweetron_data/img/icon.ico'
 font_name = 'Meiryo UI'
 
+window_layout = window_layout.window_layout(sg, window_title, png_icon_path)
+
 consumer_key = api_key.CONSUMER_KEY()
 consumer_secret = api_key.CONSUMER_SECRET()
 callback_url = 'oob'
@@ -185,7 +187,6 @@ if twitter_oauth_sw == 0:
 
 if twitter_oauth_sw == 1:
     main_window = window_layout.make_setting_window(\
-    sg, window_title, png_icon_path,
     preset_list, dt_now,
     time_h_list, time_m_list, time_s_list,
     menu_layout.main_menu(), search_word, nogood_word,
@@ -203,7 +204,7 @@ while True:
     #-------------------------------------------------------------------------------
 
     if '::version_info::' in main_event:
-        info_window = window_layout.make_info_window(sg, window_title, png_icon_path, software_version)
+        info_window = window_layout.make_info_window(software_version)
 
         while True:
             info_event, info_values = info_window.read()
@@ -221,7 +222,7 @@ while True:
     #-------------------------------------------------------------------------------
 
     if '::global_setting::' in main_event:
-        globalsetting_window = window_layout.make_globalsetting_window(sg, window_title, png_icon_path, port_number)
+        globalsetting_window = window_layout.make_globalsetting_window(port_number)
 
         while True:
             globalsetting_event, globalsetting_values = globalsetting_window.read()
@@ -445,7 +446,7 @@ while True:
 
     if main_event == '-filter_setting-' or '::search_command::' in main_event:
 
-        filterset_window = window_layout.make_filterset_window(sg, window_title, png_icon_path, **settingvalue_dict_all['filter_setting'])
+        filterset_window = window_layout.make_filterset_window(**settingvalue_dict_all['filter_setting'])
 
         while True:
             filterset_event, filterset_values = filterset_window.read()
@@ -470,7 +471,7 @@ while True:
     if main_event == '-text_set-' or '::text_setting::' in main_event:
 
         textset_window = window_layout.make_textset_window(\
-        sg, window_title, png_icon_path, fontsize_list, fonts_list, font_name,
+        fontsize_list, fonts_list, font_name,
         **settingvalue_dict_all['text_setting'])
 
         while True:
@@ -560,7 +561,6 @@ while True:
     if main_event == '-display_set-' or '::text_display::' in main_event:
 
         displayset_window = window_layout.make_displayset_window(\
-        sg, window_title, png_icon_path,
         text_scrollspeed_list, template_list,
         **settingvalue_dict_all['display_setting'])
 
