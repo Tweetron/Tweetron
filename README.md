@@ -34,6 +34,12 @@ Windowsのみ対応 (Windows10動作確認済)
 
 [Change Log](https://github.com/Tweetron/Tweetron/wiki/8.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
 
+## 開発状況
+
+現在の開発状況です
+
+[https://github.com/Tweetron/Tweetron/wiki/Roadmap](https://github.com/Tweetron/Tweetron/wiki/Roadmap)
+
 ## お問い合わせフォーム
 
 こちらのフォームからTweetronに関する問い合わせが可能です
