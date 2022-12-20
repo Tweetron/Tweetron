@@ -16,6 +16,12 @@ TweetronはOBSブラウザーソースを使用してツイートを画面上に
 
 Windowsのみ対応 (Windows10動作確認済)
 
+## Tweetronの開発状況と今後について
+
+こちらのnoteを御覧ください
+
+[https://note.com/cubezeero/n/n23b7878da798](https://note.com/cubezeero/n/n23b7878da798)
+
 ## ダウンロード
 
 こちらから最新版をダウンロードしてください
@@ -33,12 +39,6 @@ Windowsのみ対応 (Windows10動作確認済)
 ## 更新履歴
 
 [Change Log](https://github.com/Tweetron/Tweetron/wiki/8.-%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4-(Change-Log))
-
-## 開発状況
-
-現在の開発状況です
-
-[https://github.com/Tweetron/Tweetron/wiki/Roadmap](https://github.com/Tweetron/Tweetron/wiki/Roadmap)
 
 ## お問い合わせフォーム
 
