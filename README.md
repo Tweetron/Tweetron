@@ -4,7 +4,7 @@
 
 # [Tweetron](https://tweetron.cubezeero.com)
 
-## TwitterAPIの仕様変更に伴い、このソフトウェアの開発と公開は終了しました
+## TwitterAPIの仕様変更に伴い、開発と公開は終了しました
 
 [![](https://img.shields.io/github/license/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/blob/main/LICENSE)
 [![](https://img.shields.io/github/repo-size/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/)
