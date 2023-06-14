@@ -4,8 +4,6 @@
 
 # [Tweetron](https://tweetron.cubezeero.com)
 
-## TwitterAPIの仕様変更に伴い、開発と公開は終了しました
-
 [![](https://img.shields.io/github/license/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/blob/main/LICENSE)
 [![](https://img.shields.io/github/repo-size/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/)
 
@@ -14,6 +12,10 @@
 TweetronはOBSブラウザーソースを使用してツイートを画面上に表示するツールソフトです
 
 Windowsのみ対応 (Windows10動作確認済)
+
+## ダウンロード
+
+https://github.com/Tweetron/Tweetron/releases/tag/ver0.5.3(Beta)
 
 ## 使用方法
 
