@@ -2,12 +2,18 @@
   <img width="250px" src="wiki/rm_icon.png">
 </p>
 
-# [Tweetron](https://tweetron.cubezeero.com)
+# [Tweetron (開発終了)](https://tweetron.cubezeero.com)
 
 [![](https://img.shields.io/github/license/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/blob/main/LICENSE)
 [![](https://img.shields.io/github/repo-size/Tweetron/Tweetron?style=flat-square)](https://github.com/Tweetron/Tweetron/)
 
 [https://tweetron.cubezeero.com](https://tweetron.cubezeero.com)
+
+## 開発終了
+
+**X(旧TwitterAPI)有料化に伴いTweetronは開発終了しました**
+
+---
 
 TweetronはOBSブラウザーソースを使用してツイートを画面上に表示するツールソフトです
 
